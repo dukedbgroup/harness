@@ -1,0 +1,71 @@
+<?xml version='1.0'?>
+<configuration>
+	<property>
+		<name>mapred.reduce.tasks</name>
+                <description>Number of reduce tasks</description>
+                <numvalues>2</numvalues>
+		<values>10,30</values>
+	</property>
+        <property>
+                <name>io.sort.factor</name>
+                <description>The number of streams to merge at once while sorting
+                   files.  This determines the number of open file handles.</description>
+	        <numvalues>1</numvalues>
+                <values>100</values>
+        </property>
+        <property>
+                <name>mapred.map.tasks</name>
+                <numvalues>6</numvalues>
+                <values>20,40,80,160,320,640</values>
+        </property>
+        <property>
+                <name>io.sort.record.percent</name>
+	        <numvalues>1</numvalues>
+                <values>0.14</values>
+        </property>
+        <property>
+                <name>io.sort.mb</name>
+	        <numvalues>1</numvalues>
+                <values>175</values>
+        </property>
+        <property>
+                <name>io.sort.spill.percent</name>
+	        <numvalues>1</numvalues>
+                <values>0.9</values>
+        </property>
+        <property>
+                <name>mapred.job.shuffle.input.buffer.percent</name>
+	        <numvalues>1</numvalues>
+                <values>0.9</values>
+        </property>
+        <property>
+                <name>mapred.job.shuffle.merge.percent</name>
+	        <numvalues>1</numvalues>
+                <values>0.9</values>
+        </property>
+        <property>
+                <name>mapred.job.reduce.input.buffer.percent</name>
+	        <numvalues>1</numvalues>
+                <values>0.9</values>
+        </property>
+        <property>
+                <name>mapred.inmem.merge.threshold</name>
+	        <numvalues>1</numvalues>
+                <values>0</values>
+        </property>
+        <property>
+                <name>io.file.buffer.size</name>
+                <description>The size of buffer for use in sequence files.
+                      The size of this buffer should probably be a multiple of hardware
+                      page size (4096 on Intel x86), and it determines how much data is
+                      buffered during read and write operations.</description>
+	        <numvalues>1</numvalues>
+                <values>32768</values>
+        </property>
+	<property>
+		<name>mapred.child.java.opts</name>
+                <description>Java opts for the task tracker child processes</description>
+                <numvalues>1</numvalues>
+		<values>-Xmx220m</values>
+	</property>
+</configuration>

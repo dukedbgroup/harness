@@ -1,0 +1,310 @@
+--------------------------------------------------------------
+
+Useful references before you start: 
+----------------------------------
+
+- http://docs.amazonwebservices.com/AWSEC2/latest/GettingStartedGuide/
+- http://wiki.apache.org/hadoop/AmazonEC2
+
+--------------------------------------------------------------
+--------------------------------------------------------------
+
+Software to be installed on local machine: 
+------------------------------------------
+
+1. ec2-api-tools
+See: http://developer.amazonwebservices.com/connect/entry.jspa?externalID=351
+
+2. Hadoop 0.19 or higher. Ensure that src/contrib/ec2/bin contains the scripts 
+     needed to interact with EC2. See http://wiki.apache.org/hadoop/AmazonEC2
+
+3. We have modified the Hadoop EC2 scripts for our purposes. Get the latest version
+   as follows:
+
+   # cd to the src/contrib/ec2 directory in your Hadoop installation.
+   # Then rename the bin directory
+   mv ./bin ./bin.old
+   # copy the tarball for the modified scripts
+   cp /usr/research/playground/shivnath/AWS_HADOOP_HARNESS_FILES/hadoop_ec2_contrib_bin.tar.gz .
+   # untar and gunzip the tarball to create a new src/contrib/ec2/bin directory 
+   tar -zxvf hadoop_ec2_contrib_bin.tar.gz
+
+
+4. The AWS_HADOOP_HARNESS sources are in:
+    /usr/research/playground/shivnath/AWS_HADOOP_HARNESS_FILES/AWS_HADOOP_HARNESS.tar.gz
+
+   # go to some local directory where you can untar and gunzip the harness files
+   tar -zxvf /usr/research/playground/shivnath/AWS_HADOOP_HARNESS_FILES/AWS_HADOOP_HARNESS.tar.gz
+   # This will place the sources in a directory called ./AWS_HADOOP_HARNESS
+   #    (we will later set the full path to this directory as ${AWS_HADOOP_HARNESS_HOME})
+
+---------------------------------------------------------------------------
+----------------------------------------------------------------------------
+
+Variables that need to be set on the local machine.
+Add these to ${HOME}/.bash_profile or ${HOME}/.bashrc or (on the
+Duke department machines to ${HOME}/.my-bash_profile
+--------------------------------------------------
+
+# ec2-api-tools that you downloaded 
+export EC2_HOME=[PATH TO ec2-api-tools-<version> directory]
+# Ensure the $JAVA_HOME/bin contains the java executable
+export JAVA_HOME=[FILL IN with path to Java 1.6+ home]
+# the ec2 contrib directory in Hadoop
+export HADOOP_EC2_HOME=[FILL IN with path to src/contrib/ec2]
+# the directory containing the harness  
+export AWS_HADOOP_HARNESS_HOME=[FILL IN with path to the AWS_HADOOP_HARNESS directory]
+
+# Update the paths so that we can access all the ec2-api and Hadoop contrib
+#   executables from ${AWS_HADOOP_HARNESS_HOME}
+export PATH=${PATH}:${JAVA_HOME}/bin:${EC2_HOME}/bin:${HADOOP_EC2_HOME}/bin
+
+# Variables from AWS
+export AWS_USER_ID=[FILL IN]
+export AWS_ACCESS_KEY_ID=[FILL IN]
+export AWS_SECRET_ACCESS_KEY=[FILL IN]
+#  Note: it is a good idea to put the keys in 
+#    a standard directory like ${HOME}/.ec2
+#    For safety, chmod this directory to have rwx------ permission
+export EC2_PRIVATE_KEY=[FILL IN with private key file path]
+export EC2_CERT=[FILL IN certificate file]
+
+--------------------------------------------------------------
+----------------------------------------------------------------------------
+
+Create a keypair to use for the hadoop cluster. You could use 
+${EC2_HOME}/bin/ec2-add-keypair 
+
+Note: suppose you create a keypair named my-keypair
+Then, the Hadoop EC2 configuration ${HADOOP_EC2_HOME}/bin/hadoop-ec2-env.sh 
+makes two assumptions (Caveat 1 as noted below):
+
+1. that the private key file for this key is named as id_rsa-my-keypair
+2. this private key file is stored in the same *directory* where you placed 
+    your AWS private key (i.e., the ${EC2_PRIVATE_KEY} above)
+
+Of course, you can edit the Hadoop EC2 configuration in ${HADOOP_EC2_HOME}/bin/hadoop-ec2-env.sh 
+if you follow a different convention. 
+
+--------------------------------------------------------------
+----------------------------------------------------------------------------
+	
+Edit all relevant variables in ${HADOOP_EC2_HOME}/bin/hadoop-ec2-env.sh as per:
+http://wiki.apache.org/hadoop/AmazonEC2
+
+# Your Amazon Account Number. Same as ${AWS_USER_ID}
+AWS_ACCOUNT_ID=${AWS_USER_ID}
+
+# Your Amazon AWS access key. Can define it here or 
+# can comment this since it will already be defined by you above
+#AWS_ACCESS_KEY_ID=
+
+# Your Amazon AWS secret access key. Can define it here or 
+# can comment this since it will already be defined by you above
+#AWS_SECRET_ACCESS_KEY=
+
+# Location of EC2 keys. Note that $EC2_PRIVATE_KEY is a variable
+#   that you have defined above. I put the keys in ${HOME}/.ec2
+#    so that is what my EC2_KEYDIR will translate to
+EC2_KEYDIR=`dirname "$EC2_PRIVATE_KEY"`
+
+# The EC2 key name used to launch instances.
+# This will be a key pair that you create and store the private key for.
+#  For example: KEY_NAME=my-keypair
+KEY_NAME=[FILL IN with the name of the keypair you created]
+
+# Where your EC2 private key is stored. Should be fine as is
+#  if you paid attention to Caveat 1 above.
+PRIVATE_KEY_PATH=`echo "$EC2_KEYDIR"/"id_rsa-$KEY_NAME"`	
+
+--------------------------------------------------------------
+----------------------------------------------------------------------------
+
+Launching the Hadoop Cluster
+--------------------------------------
+
+NOTE: All commands here will be run from the ${AWS_HADOOP_HARNESS_HOME} 
+
+cd ${AWS_HADOOP_HARNESS_HOME} 
+
+# Launch a Hadoop cluster: 1 Master + N Slaves. The number 
+#  N is specified in the command below (we use 2 as an example)
+${HADOOP_EC2_HOME}/bin/hadoop-ec2 launch-cluster test-hadoop-cluster 2
+
+If the command was successful, it will print out the instance IDs
+of the 1 Master and the N slaves. In addition, we capture the 
+the instances ids of the slaves in the file called SLAVE_INSTANCE_IDS.txt
+so that we can get their IP addresses. 
+
+# ensure that instance IDs for N slaves are listed in SLAVE_INSTANCE_IDS.txt
+cat SLAVE_INSTANCE_IDS.txt
+cat SLAVE_INSTANCE_IDS.txt | wc -l
+
+NOTE: AWS will take some time to start up the slaves and assign IP addresses
+to them. The launch-cluster command returns before this is done. Use the 
+get_slave_status.sh command below or the AWS management console to verify 
+that all the instances have come to running state (not the pending state)
+before proceeding further
+
+# proceed only if this command prints running for each slave
+./get_slave_status.sh
+
+Now get the IP addresses of the slaves and write them to SLAVE_NAMES.txt
+./get_slave_ips.sh >SLAVE_NAMES.txt
+
+# Ensure that the SLAVE_NAMES look okay (should start with "ec2-") and that 
+#   there are N of them
+cat SLAVE_NAMES.txt
+cat SLAVE_NAMES.txt | wc -l
+
+# Login to the EC2 Hadoop Master node. This command will get you 
+# to the root prompt on the Hadoop Master if all the setup
+# and configuration has been done correctly 
+${HADOOP_EC2_HOME}/bin/hadoop-ec2 login test-hadoop-cluster
+
+# logout from the Hadoop Master and come back to the local machine. 
+#  We have to copy files from the local machine to the Hadoop Master first
+logout 
+
+--------------------------------------------------------------------------------- 
+---------------------------------------------------------------------------------
+
+NOTE: these commands have to be run from the local machine
+
+Copying our files to the Hadoop Master
+--------------------------------------
+
+Before we can start using the Hadoop cluster, we need to copy our local files 
+to the cluster 
+
+#Create a tarball (tar and gzip) of the AWS_HADOOP_HARNESS files
+
+cd ${AWS_HADOOP_HARNESS_HOME}/..
+
+tar -zcvf AWS_HADOOP_HARNESS.tar.gz AWS_HADOOP_HARNESS
+
+# Copy the tarball from the local machine to the Hadoop Master Node
+${HADOOP_EC2_HOME}/bin/hadoop-ec2 push test-hadoop-cluster ${AWS_HADOOP_HARNESS_HOME}/../AWS_HADOOP_HARNESS.tar.gz
+
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+
+Setup on the Hadoop Master
+--------------------------
+
+# Login to the EC2 Hadoop Master node. This command will get you 
+# to the root prompt on the Hadoop Master if all the setup
+# and configuration has been done correctly 
+${HADOOP_EC2_HOME}/bin/hadoop-ec2 login test-hadoop-cluster
+
+NOTE: these commands have to be run from the Hadoop Master
+
+# Ensure that this command runs correctly. It will say, "Complete!"
+#   after it runs. The "-y" flag is to say "yes" to all questions
+#   asked in the interactive mode. Remove the "-y" flag 
+#   if you want to run yum in the interactive mode.
+yum install -y perl-CPAN
+
+# open a CPAN shell so that we can install the XML::Simple module
+perl -MCPAN -e shell
+-- answer no (to avoid manual configuration)
+-- in the CPAN shell
+cpan>o conf prerequisites_policy follow
+cpan>o conf commit
+cpan>install XML::Simple
+cpan>exit
+
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+
+# Create the input for Terasort. Note the two numbers in this example command:
+#   -- The mapred.map.tasks=100 asks for 100 mappers to be used. If you do not 
+#        specify this parameter, teragen defaults to 2 mappers and would be painfully slow. 
+#   -- The 10000000 parameter specifies an input size of 10000000 records. Each record is 
+#       100 bytes, so the total size is 100x10000000 == 1GB. Vary the number of records 
+#       to get the desired input size
+${HADOOP_HOME}/bin/hadoop jar ${HADOOP_HOME}/hadoop-*-examples.jar teragen -Dmapred.map.tasks=100 10000000 /user/shivnath/tera/in
+
+# NOTE: the /user/shivnath/tera/in HDFS output directory is defined in the exper.sh script
+#   as the input directory for the Terasort experiments. If you change this path, don't 
+#   forget to change the following declaration in exper.sh
+#
+#   declare HDFS_INPUT_DIR="/user/shivnath/tera/in"
+
+# Confirm that the sort output has been created --- there will be one file per map task
+${HADOOP_HOME}/bin/hadoop fs -lsr /user/shivnath/tera/in
+
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+
+Running the Experiments in the EC2 Hadoop Master Node
+-----------------------------------------------------
+
+# Note: these commands have to be run the Hadoop Master node
+
+tar -zxvf AWS_HADOOP_HARNESS.tar.gz
+
+cd AWS_HADOOP_HARNESS
+
+# Set the desired parameters in config.1.xml---see the example config*.xml files for 
+#  the specification format. 
+
+# use less to view files on the Hadoop Master
+less config.1.xml
+
+# use the nano or vi editors to edit files on the Hadoop Master
+#  I use nano since its commands are similar to the pico editor that comes with 
+#    the pine email service. You can always use the yum package manager to 
+#    install other editors
+# For nano commands, see: http://mintaka.sdsu.edu/reu/nano.html
+nano config.1.xml
+
+# Create the TEMP directory
+mkdir TEMP
+
+# Run the perl program to generate the input directory for each experiment: 
+perl parser.pl config.1.xml ./TEMP input_dirs.txt
+
+# Note that the above command will create one subdirectory under ./TEMP
+#   per experiment. The experiments are run in a random order 
+#   to avoid side-effects. The order in which the experiments will 
+#   be run is the order in input_dirs.txt
+cat input_dirs.txt
+
+# Run the bash script to run the experiments.
+# Note: the combination of nohup and the final "&" ensure 
+#   that the job continues to run even if you logout from the Master 
+nohup ./exper.sh input_dirs.txt >&OUT.txt &
+
+# you can monitor the job execution in the JobTracker accessible at:
+http://<replace with public domain name of Hadoop Master>:50030
+
+# Note: you can find the public domain name of the Hadoop master
+#   using the AWS management console or by running the following 
+#   command on the local machine and looking for the instance listed under 
+#   test-hadoop-cluster-master
+${EC2_HOME}/bin/ec2-describe-instances 
+
+# get the map and reduce task running times for the experiments
+#  NOTE: all data per experiment will be written to the corresponding
+#     directory
+./get_exper_stats.sh input_dirs.txt
+
+# To run another set of experiments, save (or rename) the TEMP file, 
+#    and repeat the above step with another config.xml file
+
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+
+After all experiments are complete
+----------------------------------
+
+Once the execution is done, copy from the Hadoop cluster whatever data 
+you want to retain
+
+# Terminate the cluster and release the EC2 nodes (run from local machine)
+${HADOOP_EC2_HOME}/bin/hadoop-ec2 terminate-cluster test-hadoop-cluster
+-- enter yes
+
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------

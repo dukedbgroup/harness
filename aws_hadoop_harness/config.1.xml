@@ -1,0 +1,21 @@
+<?xml version='1.0'?>
+<configuration>
+	<property>
+		<name>mapred.reduce.tasks</name>
+                <description>Number of reduce tasks</description>
+                <numvalues>2</numvalues>
+		<values>10,50</values>
+	</property>
+	<property>
+		<name>mapred.child.java.opts</name>
+                <description>Java opts for the task tracker child processes</description>
+                <numvalues>1</numvalues>
+		<values>-Xmx200m</values>
+	</property>
+	<property>
+		<name>io.sort.mb</name>
+                <description>Memory for sort buffer at the Map side</description>
+                <numvalues>1</numvalues>
+		<values>150</values>
+	</property>
+</configuration>
