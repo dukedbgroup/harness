@@ -66,6 +66,7 @@ export AWS_SECRET_ACCESS_KEY=[FILL IN]
 #  Note: it is a good idea to put the keys in 
 #    a standard directory like ${HOME}/.ec2
 #    For safety, chmod this directory to have rwx------ permission
+# This is the private key for the certificate (not for the machines)
 export EC2_PRIVATE_KEY=[FILL IN with private key file path]
 export EC2_CERT=[FILL IN certificate file]
 
@@ -147,6 +148,7 @@ that all the instances have come to running state (not the pending state)
 before proceeding further
 
 # proceed only if this command prints running for each slave
+# THIS ONE IS MISSING IN THE FOLDER
 ./get_slave_status.sh
 
 Now get the IP addresses of the slaves and write them to SLAVE_NAMES.txt

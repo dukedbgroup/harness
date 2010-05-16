@@ -15,6 +15,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Import local settings if they exists
+bin=`dirname "$0"`
+bin=`cd "$bin"; pwd`
+if [[ -f local_ec2_settings.sh ]] 
+then
+  . "$bin"/local_ec2_settings.sh 
+fi
+
 # Your Amazon Account Number.
 AWS_ACCOUNT_ID=${AWS_USER_ID}
 
@@ -30,11 +38,11 @@ EC2_KEYDIR=`dirname "$EC2_PRIVATE_KEY"`
 
 # The EC2 key name used to launch instances.
 # The default is the value used in the Amazon Getting Started guide.
-KEY_NAME=my-keypair
+KEY_NAME="$EC2_KEYPAIR_NAME"
 
 # Where your EC2 private key is stored (created when following the Amazon Getting Started guide).
 # You need to change this if you don't store this with your other EC2 keys.
-PRIVATE_KEY_PATH=`echo "$EC2_KEYDIR"/"id_rsa-$KEY_NAME"`
+PRIVATE_KEY_PATH=`echo "$EC2_KEYDIR"/"$KEY_NAME"`
 
 # SSH options used when connecting to EC2 instances.
 SSH_OPTS=`echo -i "$PRIVATE_KEY_PATH" -o StrictHostKeyChecking=no -o ServerAliveInterval=30`
