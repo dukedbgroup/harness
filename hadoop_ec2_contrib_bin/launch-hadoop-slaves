@@ -41,7 +41,16 @@ if [ ! -f $MASTER_IP_PATH ]; then
 fi
 
 # Finding Hadoop image
-AMI_IMAGE=`ec2-describe-images -a | grep $S3_BUCKET | grep $HADOOP_VERSION | grep $ARCH |grep available | awk '{print $2}'`
+# Finding Hadoop image
+if [ $HADOOP_VERSION == "0.20.2" ]; then
+   # This is an image that Ned created: 
+   #    https://wiki.duke.edu/display/hadoop/List+of+Current+AMI+Images
+   AMI_IMAGE="ami-5729c03e"
+else 
+   # This part will only work for $HADOOP_VERSION being 0.19.0 or less 
+   AMI_IMAGE=`ec2-describe-images -a | grep $S3_BUCKET | grep $HADOOP_VERSION | grep $ARCH | grep available | awk '{print $2}'`   
+fi
+
 MASTER_HOST=`cat $MASTER_PRIVATE_IP_PATH`
 MASTER_ZONE=`cat $MASTER_ZONE_PATH`
 

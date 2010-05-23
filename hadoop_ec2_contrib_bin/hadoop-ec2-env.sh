@@ -48,6 +48,8 @@ PRIVATE_KEY_PATH=`echo "$EC2_KEYDIR"/"$KEY_NAME"`
 SSH_OPTS=`echo -i "$PRIVATE_KEY_PATH" -o StrictHostKeyChecking=no -o ServerAliveInterval=30`
 
 # The version of Hadoop to use.
+#  Note: HADOOP_VERSION has to be 0.19.0 or less, or 0.20.2. AMIs can be accessed 
+#    for these versions only. See launch-hadoop-master and launch-hadoop-slaves
 #HADOOP_VERSION=0.19.0
 HADOOP_VERSION=0.20.2
 
