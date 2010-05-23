@@ -27,6 +27,10 @@ HADOOP_HOME=`ls -d /usr/local/hadoop-*`
 # Modify this section to customize your Hadoop cluster.
 ################################################################################
 
+cat > $HADOOP_HOME/conf/tmp.txt <<EOF
+this is a test
+EOF
+
 cat > $HADOOP_HOME/conf/core-site.xml <<EOF
 <?xml version="1.0"?>
 <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
