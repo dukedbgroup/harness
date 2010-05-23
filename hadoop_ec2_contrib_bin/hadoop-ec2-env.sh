@@ -48,7 +48,8 @@ PRIVATE_KEY_PATH=`echo "$EC2_KEYDIR"/"$KEY_NAME"`
 SSH_OPTS=`echo -i "$PRIVATE_KEY_PATH" -o StrictHostKeyChecking=no -o ServerAliveInterval=30`
 
 # The version of Hadoop to use.
-HADOOP_VERSION=0.19.0
+#HADOOP_VERSION=0.19.0
+HADOOP_VERSION=0.20.2
 
 # The Amazon S3 bucket where the Hadoop AMI is stored.
 # The default value is for public images, so can be left if you are using running a public image.
