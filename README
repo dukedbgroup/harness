@@ -149,13 +149,15 @@ ${HADOOP_EC2_HOME}/hadoop-ec2 login test-hadoop-cluster
 # Ensure that Hadoop has been started properly on AWS using commands like: 
 # NOTE: Run these ${HADOOP_HOME}/bin/hadoop commands on the Hadoop Master Node
 
-# if this command prints non-HDFS files/directories on the Master node, 
+# This command should only show few HDFS files that all start with /mnt
+# If this command prints non-HDFS files/directories on the Master node, 
 #   then there is some problem -- somehow Hadoop got started in local mode
 ${HADOOP_HOME}/bin/hadoop fs -lsr /
 
 # This command will show all the slaves. Note: it may take a couple of minutes for 
 #   all slaves to register with the master. The following command should show
-#   N alive workers (i.e., not dead)
+#   N alive workers -- i.e., a line of the form, with N replaced with its value
+#  Datanodes available: N (N total, 0 dead)
 ${HADOOP_HOME}/bin/hadoop dfsadmin -report
 
 # logout from the Hadoop Master and come back to the local machine. 
@@ -180,7 +182,7 @@ cd ${AWS_HADOOP_HARNESS_HOME}/..
 tar -zcvf AWS_HADOOP_HARNESS.tar.gz AWS_HADOOP_HARNESS
 
 # Copy the tarball from the local machine to the Hadoop Master Node
-${HADOOP_EC2_HOME}/bin/hadoop-ec2 push test-hadoop-cluster ${AWS_HADOOP_HARNESS_HOME}/../AWS_HADOOP_HARNESS.tar.gz
+${HADOOP_EC2_HOME}/hadoop-ec2 push test-hadoop-cluster ${AWS_HADOOP_HARNESS_HOME}/../AWS_HADOOP_HARNESS.tar.gz
 
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
@@ -192,26 +194,6 @@ Setup on the Hadoop Master
 # to the root prompt on the Hadoop Master if all the setup
 # and configuration has been done correctly 
 ${HADOOP_EC2_HOME}/hadoop-ec2 login test-hadoop-cluster
-
-NOTE: these commands have to be run from the Hadoop Master
-
-# Ensure that this command runs correctly. It will say, "Complete!"
-#   after it runs. The "-y" flag is to say "yes" to all questions
-#   asked in the interactive mode. Remove the "-y" flag 
-#   if you want to run yum in the interactive mode.
-yum install -y perl-CPAN
-
-# open a CPAN shell so that we can install the XML::Simple module
-perl -MCPAN -e shell
--- answer no (to avoid manual configuration)
--- in the CPAN shell
-cpan>o conf prerequisites_policy follow
-cpan>o conf commit
-cpan>install XML::Simple
-cpan>exit
-
----------------------------------------------------------------------------------
----------------------------------------------------------------------------------
 
 # Create the input for Terasort. Note the two numbers in this example command:
 #   -- The mapred.map.tasks=100 asks for 100 mappers to be used. If you do not 

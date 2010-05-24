@@ -56,6 +56,8 @@ MASTER_ZONE=`cat $MASTER_ZONE_PATH`
 
 # Substituting master hostname
 sed -e "s|%MASTER_HOST%|$MASTER_HOST|" "$bin"/$USER_DATA_FILE > "$bin"/${USER_DATA_FILE}.slave
+# make the file user executable
+chmod u+x "$bin"/${USER_DATA_FILE}.slave
 
 # Start slaves
 echo "Adding $2 node(s) to cluster group $CLUSTER with AMI $AMI_IMAGE"
@@ -83,9 +85,9 @@ done
 
 #cat "${AWS_HADOOP_HARNESS_HOME}"/SLAVE_NAMES.txt
 
-scp $SSH_OPTS "${bin}/${USER_DATA_FILE}.slave" "root@$MASTER_EC2_HOST:"
-scp $SSH_OPTS "${AWS_HADOOP_HARNESS_HOME}"/SLAVE_NAMES.txt "root@$MASTER_EC2_HOST:"
-#scp $SSH_OPTS "${bin}/start_hadoop_on_slaves.sh" "root@$MASTER_EC2_HOST:"
-#ssh $SSH_OPTS "root@$MASTER_EC2_HOST" "/root/start_hadoop_on_slaves.sh"
+scp $SSH_OPTS "${bin}/${USER_DATA_FILE}.slave" "root@$MASTER_EC2_HOST:/root/ec2_hadoop_slave_init.sh"
+scp $SSH_OPTS "${AWS_HADOOP_HARNESS_HOME}"/SLAVE_NAMES.txt "root@$MASTER_EC2_HOST:/root/SLAVE_NAMES.txt"
+scp $SSH_OPTS "${bin}/start_hadoop_on_slaves.sh" "root@$MASTER_EC2_HOST:/root/start_hadoop_on_slaves.sh"
+ssh $SSH_OPTS "root@$MASTER_EC2_HOST" "/root/start_hadoop_on_slaves.sh"
 
 rm "$bin"/${USER_DATA_FILE}.slave

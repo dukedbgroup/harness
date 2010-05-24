@@ -139,8 +139,8 @@ ssh $SSH_OPTS "root@$MASTER_EC2_HOST" "chmod 600 /root/.ssh/id_rsa"
 
 # NOTE: we removed the "-f $bin/$USER_DATA_FILE" part from the ec2-run-instances command above. We now explicitly scp 
 #   this script to the Hadoop nodes, and run the script
-scp $SSH_OPTS "${bin}/${USER_DATA_FILE}" "root@$MASTER_EC2_HOST:"
-ssh $SSH_OPTS "root@$MASTER_EC2_HOST" "/root/${USER_DATA_FILE}"
+scp $SSH_OPTS "${bin}/${USER_DATA_FILE}" "root@$MASTER_EC2_HOST:/root/ec2_hadoop_master_init.sh"
+ssh $SSH_OPTS "root@$MASTER_EC2_HOST" "/root/ec2_hadoop_master_init.sh"
 
 MASTER_IP=`dig +short $MASTER_EC2_HOST`
 echo "Master is $MASTER_EC2_HOST, ip is $MASTER_IP, zone is $MASTER_EC2_ZONE."
