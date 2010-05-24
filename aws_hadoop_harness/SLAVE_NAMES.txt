@@ -1,2 +1,1 @@
-ec2-184-73-102-77.compute-1.amazonaws.com
-ec2-174-129-173-42.compute-1.amazonaws.com
+domU-12-31-39-09-48-44.compute-1.internal

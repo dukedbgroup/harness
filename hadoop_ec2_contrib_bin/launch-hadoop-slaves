@@ -41,7 +41,6 @@ if [ ! -f $MASTER_IP_PATH ]; then
 fi
 
 # Finding Hadoop image
-# Finding Hadoop image
 if [ $HADOOP_VERSION == "0.20.2" ]; then
    # This is an image that Ned created: 
    #    https://wiki.duke.edu/display/hadoop/List+of+Current+AMI+Images
@@ -52,14 +51,41 @@ else
 fi
 
 MASTER_HOST=`cat $MASTER_PRIVATE_IP_PATH`
+MASTER_EC2_HOST=`cat $MASTER_IP_PATH`
 MASTER_ZONE=`cat $MASTER_ZONE_PATH`
 
 # Substituting master hostname
-sed -e "s|%MASTER_HOST%|$MASTER_HOST|" "$bin"/$USER_DATA_FILE > "$bin"/$USER_DATA_FILE.slave
+sed -e "s|%MASTER_HOST%|$MASTER_HOST|" "$bin"/$USER_DATA_FILE > "$bin"/${USER_DATA_FILE}.slave
 
 # Start slaves
 echo "Adding $2 node(s) to cluster group $CLUSTER with AMI $AMI_IMAGE"
-ec2-run-instances $AMI_IMAGE -n "$NO_INSTANCES" -g "$CLUSTER" -k "$KEY_NAME" -f "$bin"/$USER_DATA_FILE.slave -t "$INSTANCE_TYPE" -z "$MASTER_ZONE" $KERNEL_ARG | grep INSTANCE | awk '{print $2}' >& SLAVE_INSTANCE_IDS.txt
-cat SLAVE_INSTANCE_IDS.txt
+#ec2-run-instances $AMI_IMAGE -n "$NO_INSTANCES" -g "$CLUSTER" -k "$KEY_NAME" -f "$bin"/$USER_DATA_FILE.slave -t "$INSTANCE_TYPE" -z "$MASTER_ZONE" $KERNEL_ARG | grep INSTANCE | awk '{print $2}' > "${AWS_HADOOP_HARNESS_HOME}"/SLAVE_INSTANCE_IDS.txt
+ec2-run-instances $AMI_IMAGE -n "$NO_INSTANCES" -g "$CLUSTER" -k "$KEY_NAME" -t "$INSTANCE_TYPE" -z "$MASTER_ZONE" $KERNEL_ARG | grep INSTANCE | awk '{print $2}' > "${AWS_HADOOP_HARNESS_HOME}"/SLAVE_INSTANCE_IDS.txt
+cat "${AWS_HADOOP_HARNESS_HOME}"/SLAVE_INSTANCE_IDS.txt
 
-rm "$bin"/$USER_DATA_FILE.slave
+echo "Waiting for the $2 instances to start"
+
+# we will capture the private IPs of the slaves in "${AWS_HADOOP_HARNESS_HOME}"/SLAVE_NAMES.txt
+echo -n >"${AWS_HADOOP_HARNESS_HOME}"/SLAVE_NAMES.txt
+
+for INSTANCE in $(<"${AWS_HADOOP_HARNESS_HOME}"/SLAVE_INSTANCE_IDS.txt); do
+   while true; do
+     # get private dns for the instance
+     INSTANCE_HOST=`ec2-describe-instances $INSTANCE | grep running | awk '{print $5}'`
+     if [ ! -z $INSTANCE_HOST ]; then
+       echo "$INSTANCE_HOST" >> "${AWS_HADOOP_HARNESS_HOME}"/SLAVE_NAMES.txt
+       echo "Instance $INSTANCE has been assigned private IP $INSTANCE_HOST"
+       break;
+     fi
+     sleep 1
+   done
+done
+
+#cat "${AWS_HADOOP_HARNESS_HOME}"/SLAVE_NAMES.txt
+
+scp $SSH_OPTS "${bin}/${USER_DATA_FILE}.slave" "root@$MASTER_EC2_HOST:"
+scp $SSH_OPTS "${AWS_HADOOP_HARNESS_HOME}"/SLAVE_NAMES.txt "root@$MASTER_EC2_HOST:"
+#scp $SSH_OPTS "${bin}/start_hadoop_on_slaves.sh" "root@$MASTER_EC2_HOST:"
+#ssh $SSH_OPTS "root@$MASTER_EC2_HOST" "/root/start_hadoop_on_slaves.sh"
+
+rm "$bin"/${USER_DATA_FILE}.slave

@@ -129,38 +129,34 @@ cd ${AWS_HADOOP_HARNESS_HOME}
 
 # Launch a Hadoop cluster: 1 Master + N Slaves. The number 
 #  N is specified in the command below (we use 2 as an example)
-${HADOOP_EC2_HOME}/bin/hadoop-ec2 launch-cluster test-hadoop-cluster 2
+${HADOOP_EC2_HOME}/hadoop-ec2 launch-cluster test-hadoop-cluster 2
 
-If the command was successful, it will print out the instance IDs
-of the 1 Master and the N slaves. In addition, we capture the 
-the instances ids of the slaves in the file called SLAVE_INSTANCE_IDS.txt
-so that we can get their IP addresses. 
+If the command was successful, it will print out the instance IDs and private IPs
+of the 1 Master and the N slaves. In addition, we capture:
+  -- the instance ids of the slaves in the file called SLAVE_INSTANCE_IDS.txt
+  -- the AWS private IPs of the slaves in the file called SLAVE_NAMES.txt
+Both these files are in ${AWS_HADOOP_HARNESS_HOME} 
 
-# ensure that instance IDs for N slaves are listed in SLAVE_INSTANCE_IDS.txt
-cat SLAVE_INSTANCE_IDS.txt
-cat SLAVE_INSTANCE_IDS.txt | wc -l
-
-NOTE: AWS will take some time to start up the slaves and assign IP addresses
-to them. The launch-cluster command returns before this is done. Use the 
-get_slave_status.sh command below or the AWS management console to verify 
-that all the instances have come to running state (not the pending state)
-before proceeding further
-
-# proceed only if this command prints running for each slave
-./get_slave_status.sh
-
-Now get the IP addresses of the slaves and write them to SLAVE_NAMES.txt
-./get_slave_ips.sh >SLAVE_NAMES.txt
-
-# Ensure that the SLAVE_NAMES look okay (should start with "ec2-") and that 
-#   there are N of them
+# Ensure that the SLAVE_NAMES look okay and that there are N of them
 cat SLAVE_NAMES.txt
 cat SLAVE_NAMES.txt | wc -l
 
 # Login to the EC2 Hadoop Master node. This command will get you 
 # to the root prompt on the Hadoop Master if all the setup
 # and configuration has been done correctly 
-${HADOOP_EC2_HOME}/bin/hadoop-ec2 login test-hadoop-cluster
+${HADOOP_EC2_HOME}/hadoop-ec2 login test-hadoop-cluster
+
+# Ensure that Hadoop has been started properly on AWS using commands like: 
+# NOTE: Run these ${HADOOP_HOME}/bin/hadoop commands on the Hadoop Master Node
+
+# if this command prints non-HDFS files/directories on the Master node, 
+#   then there is some problem -- somehow Hadoop got started in local mode
+${HADOOP_HOME}/bin/hadoop fs -lsr /
+
+# This command will show all the slaves. Note: it may take a couple of minutes for 
+#   all slaves to register with the master. The following command should show
+#   N alive workers (i.e., not dead)
+${HADOOP_HOME}/bin/hadoop dfsadmin -report
 
 # logout from the Hadoop Master and come back to the local machine. 
 #  We have to copy files from the local machine to the Hadoop Master first
@@ -195,7 +191,7 @@ Setup on the Hadoop Master
 # Login to the EC2 Hadoop Master node. This command will get you 
 # to the root prompt on the Hadoop Master if all the setup
 # and configuration has been done correctly 
-${HADOOP_EC2_HOME}/bin/hadoop-ec2 login test-hadoop-cluster
+${HADOOP_EC2_HOME}/hadoop-ec2 login test-hadoop-cluster
 
 NOTE: these commands have to be run from the Hadoop Master
 
