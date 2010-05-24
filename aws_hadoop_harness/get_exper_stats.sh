@@ -118,8 +118,6 @@ while read direc <&3 ; do
 #grep "Running" /usr/research/home/shivnath/HADOOP/HARNESS/TEMP/EXPT1/output.txt  ---> returns the line of the form
 #10/01/26 08:11:26 INFO mapred.JobClient: Running job: job_201001231500_0039
 
-   {
-
 # get the job id        
         hadoop_job_id=`grep "Running" $EXPERIMENT_OUTPUT_FILE | sed 's/.*\(job[0-9_]\+\)$/\1/'`
 
@@ -155,17 +153,17 @@ while read direc <&3 ; do
 #        printf "Job $hadoop_job_id: started at $job_started_at and ended at $job_ended_at\n"
 #        printf "Job $hadoop_job_id: running time = %d seconds\n" "$job_run_time"
 
-#       $TASK_TIMES_BASH_SCRIPT $MAP_TIMES_PERL_FILE $hadoop_job_id &>$MAP_TIMES_OUTPUT_FILE
-#       $TASK_TIMES_BASH_SCRIPT $REDUCE_TIMES_PERL_FILE $hadoop_job_id &>$REDUCE_TIMES_OUTPUT_FILE
+# The commands below will extract the individual running times of all map and reduce
+#    tasks for the job, and write the output to the experiment subdirectory. These 
+#    commands are disabled for now. Uncomment them if you need to get a distribution
+#    of map/reduce task running times. 
 
-   } &
-
-   # we have to wait here until the above command terminates
-   wait $!  #wait for the last background process to exit
-
-#   printf "Exiting experiment input directory %s\n" "$direc"
+#       $TASK_TIMES_BASH_SCRIPT $MAP_TIMES_PERL_FILE $hadoop_job_id &>$MAP_TIMES_OUTPUT_FILE &
+#       $TASK_TIMES_BASH_SCRIPT $REDUCE_TIMES_PERL_FILE $hadoop_job_id &>$REDUCE_TIMES_OUTPUT_FILE &
 
 done
+
+wait #wait for the background processes to exit
 
 exit 0
 

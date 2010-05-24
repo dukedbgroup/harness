@@ -179,7 +179,7 @@ to the cluster
 
 cd ${AWS_HADOOP_HARNESS_HOME}/..
 
-tar -zcvf AWS_HADOOP_HARNESS.tar.gz AWS_HADOOP_HARNESS
+tar -zcvf AWS_HADOOP_HARNESS.tar.gz aws_hadoop_harness
 
 # Copy the tarball from the local machine to the Hadoop Master Node
 ${HADOOP_EC2_HOME}/hadoop-ec2 push test-hadoop-cluster ${AWS_HADOOP_HARNESS_HOME}/../AWS_HADOOP_HARNESS.tar.gz
@@ -221,7 +221,7 @@ ${HADOOP_HOME}/bin/hadoop fs -lsr /user/shivnath/tera/in
 Running the Experiments in the EC2 Hadoop Master Node
 -----------------------------------------------------
 
-# Note: these commands have to be run the Hadoop Master node
+# Note: these commands have to be run on the Hadoop Master node
 
 tar -zxvf AWS_HADOOP_HARNESS.tar.gz
 
@@ -253,7 +253,7 @@ perl parser.pl config.1.xml ./TEMP input_dirs.txt
 cat input_dirs.txt
 
 # Run the bash script to run the experiments.
-# Note: the combination of nohup and the final "&" ensure 
+# Note: the combination of nohup and the final "&" ensures 
 #   that the job continues to run even if you logout from the Master 
 nohup ./exper.sh input_dirs.txt >&OUT.txt &
 
@@ -272,12 +272,13 @@ ${EC2_HOME}/bin/ec2-describe-instances
 ./get_exper_stats.sh input_dirs.txt
 
 # To run another set of experiments, save (or rename) the TEMP file, 
-#    and repeat the above step with another config.xml file
+#    and repeat the steps (starting with "perl parser.pl ...") with another config.xml file
 
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 
 Examples of commands that I use to extract/summarize information from the ouput/logs
+after a set of experiments are complete
 ---------------------------------------------------------------------------
 
 # create a listing of the experiment directories used in a run
@@ -297,15 +298,15 @@ find ./TEMP.1 -type d | grep "EX" >dirs.txt
 #    that the first three parameters ($1, $2, and $3 in awk) are varied, the next three remain 
 #    unchanged, and the running time is the seventh field ($7 in awk)
 # The awk part here seems unnecessary, but I had trouble getting the multi-field sort to work as 
-#   expected when the field delimitters were "," --- in the command below, the input to sort has 
-#   spaces (" ") as field delimitters
+#   expected when the field delimitters were "," 
+# Note: in the command below, the input to sort has spaces (" ") as field delimitters
 ./get_exper_stats.sh ./dirs.txt | awk -F, '{print $1 " " $2 " " $3 " " $7}' | sort -n --key=1 --key=2 --key=3
 
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 
-After all experiments are complete
-----------------------------------
+Shutting down the EC2 Hadoop Cluster
+------------------------------------
 
 Once the execution is done, copy from the Hadoop cluster whatever data 
 you want to retain
