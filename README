@@ -15,58 +15,54 @@ Software to be installed on local machine:
 1. ec2-api-tools
 See: http://developer.amazonwebservices.com/connect/entry.jspa?externalID=351
 
-2. Hadoop 0.19 or higher. Ensure that src/contrib/ec2/bin contains the scripts 
-     needed to interact with EC2. See http://wiki.apache.org/hadoop/AmazonEC2
+2. Get the AWS harness source from the Git repository. See:
+   https://wiki.duke.edu/display/hadoop/Source+Code
+    
+   # The command will be something of the form, with $USER replaced as needed:
+   git clone ssh://$USER@linux.cs.duke.edu/usr/research/proj/git/harness.git   
 
-3. We have modified the Hadoop EC2 scripts for our purposes. Get the latest version
-   as follows:
+   # If you are on a Duke machine with access to /usr/research/proj, the following will also work:
+   git clone file:///usr/research/proj/git/harness.git   
 
-   # cd to the src/contrib/ec2 directory in your Hadoop installation.
-   # Then rename the bin directory
-   mv ./bin ./bin.old
-   # copy the tarball for the modified scripts
-   cp /usr/research/playground/shivnath/AWS_HADOOP_HARNESS_FILES/hadoop_ec2_contrib_bin.tar.gz .
-   # untar and gunzip the tarball to create a new src/contrib/ec2/bin directory 
-   tar -zxvf hadoop_ec2_contrib_bin.tar.gz
-
-
-4. The AWS_HADOOP_HARNESS sources are in:
-    /usr/research/playground/shivnath/AWS_HADOOP_HARNESS_FILES/AWS_HADOOP_HARNESS.tar.gz
-
-   # go to some local directory where you can untar and gunzip the harness files
-   tar -zxvf /usr/research/playground/shivnath/AWS_HADOOP_HARNESS_FILES/AWS_HADOOP_HARNESS.tar.gz
-   # This will place the sources in a directory called ./AWS_HADOOP_HARNESS
-   #    (we will later set the full path to this directory as ${AWS_HADOOP_HARNESS_HOME})
+   The above command will place the harness sources in the harness directory
+   -- The Hadoop ec2 contrib sources we need are in: harness/hadoop_ec2_contrib_bin
+   -- The AWS harness sources we need are in: harness/aws_hadoop_harness
 
 ---------------------------------------------------------------------------
 ----------------------------------------------------------------------------
 
 Variables that need to be set on the local machine.
-Add these to ${HOME}/.bash_profile or ${HOME}/.bashrc or (on the
-Duke department machines to ${HOME}/.my-bash_profile
+Add these to ${HOME}/.bash_profile or ${HOME}/.bashrc or on the
+Duke department machines to ${HOME}/.my-bash_profile since the 
+${HOME}/.bash_profile does a "source ~/.my-bash_profile"
 --------------------------------------------------
 
 # ec2-api-tools that you downloaded 
 export EC2_HOME=[PATH TO ec2-api-tools-<version> directory]
+
 # Ensure the $JAVA_HOME/bin contains the java executable
 export JAVA_HOME=[FILL IN with path to Java 1.6+ home]
+
 # the ec2 contrib directory in Hadoop
-export HADOOP_EC2_HOME=[FILL IN with path to src/contrib/ec2]
+export HADOOP_EC2_HOME=[FILL IN with path to harness/hadoop_ec2_contrib_bin]
+
 # the directory containing the harness  
-export AWS_HADOOP_HARNESS_HOME=[FILL IN with path to the AWS_HADOOP_HARNESS directory]
+export AWS_HADOOP_HARNESS_HOME=[FILL IN with path to harness/aws_hadoop_harness]
 
 # Update the paths so that we can access all the ec2-api and Hadoop contrib
 #   executables from ${AWS_HADOOP_HARNESS_HOME}
-export PATH=${PATH}:${JAVA_HOME}/bin:${EC2_HOME}/bin:${HADOOP_EC2_HOME}/bin
+export PATH=${PATH}:${JAVA_HOME}/bin:${EC2_HOME}/bin:${HADOOP_EC2_HOME}
 
 # Variables from AWS
 export AWS_USER_ID=[FILL IN]
+
 export AWS_ACCESS_KEY_ID=[FILL IN]
+
 export AWS_SECRET_ACCESS_KEY=[FILL IN]
+
 #  Note: it is a good idea to put the keys in 
 #    a standard directory like ${HOME}/.ec2
-#    For safety, chmod this directory to have rwx------ permission
-# This is the private key for the certificate (not for the machines)
+#    For safety, chmod this directory to have rwx------ (i.e., chmod 700) permission
 export EC2_PRIVATE_KEY=[FILL IN with private key file path]
 export EC2_CERT=[FILL IN certificate file]
 
@@ -77,20 +73,23 @@ Create a keypair to use for the hadoop cluster. You could use
 ${EC2_HOME}/bin/ec2-add-keypair 
 
 Note: suppose you create a keypair named my-keypair
-Then, the Hadoop EC2 configuration ${HADOOP_EC2_HOME}/bin/hadoop-ec2-env.sh 
-makes two assumptions (Caveat 1 as noted below):
+Then, the Hadoop EC2 configuration ${HADOOP_EC2_HOME}/hadoop-ec2-env.sh 
+makes two assumptions 
 
+****************** Caveat 1 as noted later *********************
 1. that the private key file for this key is named as id_rsa-my-keypair
 2. this private key file is stored in the same *directory* where you placed 
     your AWS private key (i.e., the ${EC2_PRIVATE_KEY} above)
+****************** Caveat 1 as noted later *********************
 
-Of course, you can edit the Hadoop EC2 configuration in ${HADOOP_EC2_HOME}/bin/hadoop-ec2-env.sh 
-if you follow a different convention. 
+Of course, you can edit the Hadoop EC2 configuration in ${HADOOP_EC2_HOME}/hadoop-ec2-env.sh 
+if you follow a different convention. Ned, for example, follows a different convention
+as noted in ${HADOOP_EC2_HOME}/hadoop-ec2-env.sh 
 
 --------------------------------------------------------------
 ----------------------------------------------------------------------------
 	
-Edit all relevant variables in ${HADOOP_EC2_HOME}/bin/hadoop-ec2-env.sh as per:
+Edit all relevant variables in ${HADOOP_EC2_HOME}/hadoop-ec2-env.sh as per:
 http://wiki.apache.org/hadoop/AmazonEC2
 
 # Your Amazon Account Number. Same as ${AWS_USER_ID}
@@ -148,7 +147,6 @@ that all the instances have come to running state (not the pending state)
 before proceeding further
 
 # proceed only if this command prints running for each slave
-# THIS ONE IS MISSING IN THE FOLDER
 ./get_slave_status.sh
 
 Now get the IP addresses of the slaves and write them to SLAVE_NAMES.txt
@@ -226,6 +224,9 @@ cpan>exit
 #       100 bytes, so the total size is 100x10000000 == 1GB. Vary the number of records 
 #       to get the desired input size
 ${HADOOP_HOME}/bin/hadoop jar ${HADOOP_HOME}/hadoop-*-examples.jar teragen -Dmapred.map.tasks=100 10000000 /user/shivnath/tera/in
+
+# Example command to generate a 50GB sort input
+# ${HADOOP_HOME}/bin/hadoop jar ${HADOOP_HOME}/hadoop-*-examples.jar teragen -Dmapred.map.tasks=500 500000000 /user/shivnath/tera/in
 
 # NOTE: the /user/shivnath/tera/in HDFS output directory is defined in the exper.sh script
 #   as the input directory for the Terasort experiments. If you change this path, don't 

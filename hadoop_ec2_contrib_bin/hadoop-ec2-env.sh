@@ -36,24 +36,35 @@ AWS_ACCOUNT_ID=${AWS_USER_ID}
 # The default setting is probably OK if you set up EC2 following the Amazon Getting Started guide.
 EC2_KEYDIR=`dirname "$EC2_PRIVATE_KEY"`
 
-# The EC2 key name used to launch instances.
-# The default is the value used in the Amazon Getting Started guide.
-KEY_NAME="$EC2_KEYPAIR_NAME"
+# The EC2 key name used to launch instances. Change it as needed. 
+KEY_NAME=my-keypair
+# Ned's convention:
+#KEY_NAME="${EC2_KEYPAIR_NAME}"
 
 # Where your EC2 private key is stored (created when following the Amazon Getting Started guide).
-# You need to change this if you don't store this with your other EC2 keys.
-PRIVATE_KEY_PATH=`echo "$EC2_KEYDIR"/"$KEY_NAME"`
+PRIVATE_KEY_PATH=`echo "${EC2_KEYDIR}"/"id_rsa-${KEY_NAME}"`
+# Ned's convention:
+#PRIVATE_KEY_PATH=`echo "$EC2_KEYDIR"/"$KEY_NAME"`
 
 # SSH options used when connecting to EC2 instances.
 SSH_OPTS=`echo -i "$PRIVATE_KEY_PATH" -o StrictHostKeyChecking=no -o ServerAliveInterval=30`
 
 # The version of Hadoop to use.
 #  Note: HADOOP_VERSION has to be 0.19.0 or less, or 0.20.2. AMIs can be accessed 
-#    for these versions only. See launch-hadoop-master and launch-hadoop-slaves
+#    for these versions only. Intermediate versions are not supported. 
+#    See launch-hadoop-master and launch-hadoop-slaves
 #HADOOP_VERSION=0.19.0
 HADOOP_VERSION=0.20.2
 
-# The Amazon S3 bucket where the Hadoop AMI is stored.
+# The script to run on instance boot.
+#USER_DATA_FILE=hadoop-ec2-init-remote.sh
+if [ $HADOOP_VERSION == "0.20.2" ]; then
+  USER_DATA_FILE=hadoop-ec2-init-remote-post-0.20.0.sh
+else 
+  USER_DATA_FILE=hadoop-ec2-init-remote-pre-0.20.0.sh
+fi
+
+# The Amazon S3 bucket where the Hadoop AMI is stored. Used only for HADOOP_VERSION <= 0.19.0 
 # The default value is for public images, so can be left if you are using running a public image.
 # Change this value only if you are creating your own (private) AMI
 # so you can store it in a bucket you own.
@@ -62,8 +73,6 @@ S3_BUCKET=hadoop-images
 # Enable public access to JobTracker and TaskTracker web interfaces
 ENABLE_WEB_PORTS=true
 
-# The script to run on instance boot.
-USER_DATA_FILE=hadoop-ec2-init-remote.sh
 
 # The EC2 instance type: m1.small, m1.large, m1.xlarge
 INSTANCE_TYPE="m1.small"

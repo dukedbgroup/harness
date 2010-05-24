@@ -95,16 +95,6 @@ cat > $HADOOP_HOME/conf/mapred-site.xml <<EOF
   <value>3</value>
 </property>
 
-<property>
-  <name>mapred.output.compress</name>
-  <value>true</value>
-</property>
-
-<property>
-  <name>mapred.output.compression.type</name>
-  <value>BLOCK</value>
-</property>
-
 </configuration>
 EOF
 
