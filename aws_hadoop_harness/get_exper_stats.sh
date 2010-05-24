@@ -83,12 +83,21 @@ fi
 declare CURR_DIR=`pwd`
 declare direc
 declare hadoop_job_id
+declare job_started_at
+declare job_ended_at
+declare job_start_time
+declare job_end_time
+declare job_start_date
+declare job_end_date
+declare -i job_started_at_epoch
+declare -i job_ended_at_epoch
+declare -i job_run_time
 
 exec 3< $INPUT_DIR_FILE
 
 while read direc <&3 ; do
 
-   printf "Entering experiment input directory %s\n" "$direc"
+#   printf "Entering experiment input directory %s\n" "$direc"
 
    # just in case the directories are specified relative to CURR_DIR
    cd $CURR_DIR
@@ -110,17 +119,51 @@ while read direc <&3 ; do
 #10/01/26 08:11:26 INFO mapred.JobClient: Running job: job_201001231500_0039
 
    {
-       hadoop_job_id=`grep "Running" $EXPERIMENT_OUTPUT_FILE | sed 's/.*\(job[0-9_]\+\)$/\1/'`
 
-       $TASK_TIMES_BASH_SCRIPT $MAP_TIMES_PERL_FILE $hadoop_job_id &>$MAP_TIMES_OUTPUT_FILE
+# get the job id        
+        hadoop_job_id=`grep "Running" $EXPERIMENT_OUTPUT_FILE | sed 's/.*\(job[0-9_]\+\)$/\1/'`
 
-       $TASK_TIMES_BASH_SCRIPT $REDUCE_TIMES_PERL_FILE $hadoop_job_id &>$REDUCE_TIMES_OUTPUT_FILE
+# We would like to extract the job running time by subtracting the start time from the end time
+#    The start time is extracted from the following line in the job output (note that this is not the first line):
+# 10/05/10 15:05:06 INFO mapred.JobClient: Running job: job_201005101219_0006
+#    The end time is extracted from the line in the job output which has the form:
+# 10/05/10 16:01:45 INFO mapred.JobClient: Job complete: job_201005101219_0006
+#
+# There is one catch that we have to deal with: Hadoop times in the job output are printed in a surprising 
+# "YY/MM/DD hh:mm:ss" format, while date -d assumes a more conventional "MM/DD/YY hh:mm:ss" format. 
+# That is: the dates in the above example lines---10/05/10---are for May 10, 2010 
+#
+        job_started_at=`grep "Running" $EXPERIMENT_OUTPUT_FILE | grep "$hadoop_job_id" | awk '{print $1 " " $2}'`
+        job_start_date=`echo $job_started_at | awk '{print $1}' | awk -F/ '{print $2"/"$3"/"$1}'`
+        job_start_time=`echo $job_started_at | awk '{print $2}'`
+        job_started_at="$job_start_date $job_start_time"
+        job_started_at_epoch=`eval "date --date='$job_started_at' '+%s'"`
+	
+        job_ended_at=`grep "complete" $EXPERIMENT_OUTPUT_FILE | grep "$hadoop_job_id" | grep "Job" | awk '{print $1 " " $2}'`
+        job_end_date=`echo $job_ended_at | awk '{print $1}' | awk -F/ '{print $2"/"$3"/"$1}'`
+        job_end_time=`echo $job_ended_at | awk '{print $2}'`
+        job_ended_at="$job_end_date $job_end_time"
+        job_ended_at_epoch=`eval "date --date='$job_ended_at' '+%s'"`
+
+        job_run_time=$job_ended_at_epoch-$job_started_at_epoch
+
+# print the configuration parameter settings
+        cat $XML_CONFIGURATION_FILE | grep value | sed -e 's/<value>//;s/<\/value>//' | awk '{print $1}' | tr \\n ", "
+        printf "%d\n" "$job_run_time"
+
+
+#        printf "Job $hadoop_job_id: started at $job_started_at and ended at $job_ended_at\n"
+#        printf "Job $hadoop_job_id: running time = %d seconds\n" "$job_run_time"
+
+#       $TASK_TIMES_BASH_SCRIPT $MAP_TIMES_PERL_FILE $hadoop_job_id &>$MAP_TIMES_OUTPUT_FILE
+#       $TASK_TIMES_BASH_SCRIPT $REDUCE_TIMES_PERL_FILE $hadoop_job_id &>$REDUCE_TIMES_OUTPUT_FILE
+
    } &
 
    # we have to wait here until the above command terminates
    wait $!  #wait for the last background process to exit
 
-   printf "Exiting experiment input directory %s\n" "$direc"
+#   printf "Exiting experiment input directory %s\n" "$direc"
 
 done
 

@@ -277,6 +277,33 @@ ${EC2_HOME}/bin/ec2-describe-instances
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 
+Examples of commands that I use to extract/summarize information from the ouput/logs
+---------------------------------------------------------------------------
+
+# create a listing of the experiment directories used in a run
+find ./TEMP -type d | grep "EX" >dirs.txt
+
+#  I usually rename the main experiment directory to the TEMP.X format so 
+#    that I can use the name TEMP for a new run
+find ./TEMP.1 -type d | grep "EX" >dirs.txt
+
+# extracts the parameters and the running time --- see below on examples to 
+#    sort the output for easier reading
+# Also note: despite the caveats in the file, get_exper_stats will work 
+#    when the directory listings provided are relative rather than absolute
+./get_exper_stats.sh ./dirs.txt
+
+# sort the output on the parameter values of interest --- in the example command below, I am assuming 
+#    that the first three parameters ($1, $2, and $3 in awk) are varied, the next three remain 
+#    unchanged, and the running time is the seventh field ($7 in awk)
+# The awk part here seems unnecessary, but I had trouble getting the multi-field sort to work as 
+#   expected when the field delimitters were "," --- in the command below, the input to sort has 
+#   spaces (" ") as field delimitters
+./get_exper_stats.sh ./dirs.txt | awk -F, '{print $1 " " $2 " " $3 " " $7}' | sort -n --key=1 --key=2 --key=3
+
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+
 After all experiments are complete
 ----------------------------------
 
@@ -284,7 +311,7 @@ Once the execution is done, copy from the Hadoop cluster whatever data
 you want to retain
 
 # Terminate the cluster and release the EC2 nodes (run from local machine)
-${HADOOP_EC2_HOME}/bin/hadoop-ec2 terminate-cluster test-hadoop-cluster
+${HADOOP_EC2_HOME}/hadoop-ec2 terminate-cluster test-hadoop-cluster
 -- enter yes
 
 ---------------------------------------------------------------------------------

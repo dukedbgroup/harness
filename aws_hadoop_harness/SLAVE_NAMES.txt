@@ -1,2 +1,0 @@
-ip-10-195-97-143.ec2.internal
-ip-10-243-41-125.ec2.internal
