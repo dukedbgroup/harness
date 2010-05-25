@@ -14,7 +14,7 @@ PERL_BIN="/usr/bin/perl"
 HADOOP_LOG_DIR="${HADOOP_LOG_DIR:-/mnt/hadoop/logs}"
 
 # The list of slaves in this Hadoop cluster. Same format as the slaves file in Hadoop -- one slave per line 
-HOSTLIST="/root/aws_hadoop_harness/SLAVE_NAMES.txt"
+HOSTLIST="/root/SLAVE_NAMES.txt"
 	
 # Definition of the HADOOP_SSH_OPTS and HADOOP_SLAVE_SLEEP variables
 HADOOP_CONF_DIR="${HADOOP_CONF_DIR:-$HADOOP_HOME/conf}"
