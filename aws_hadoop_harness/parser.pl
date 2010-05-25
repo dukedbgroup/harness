@@ -264,7 +264,9 @@ sub gen_random_permutation {
 	    # a random adjacent pair of elements.  
 	{
 	    $k = int( rand($n-1) );
-	    ( $nums [$k], $nums [$k + 1] ) = ($nums [$k + 1], $nums [$k] );
+            if ($k >= 0 && $k < ($n-1)) {
+	      ( $nums [$k], $nums [$k + 1] ) = ($nums [$k + 1], $nums [$k] );
+            }
 	}
     }
     

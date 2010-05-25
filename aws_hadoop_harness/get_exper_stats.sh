@@ -15,9 +15,9 @@
 #  command gets generated to run the experiment on Hadoop
 
 ###  NOTE: THESE NEED TO BE FULL PATHS AND NOT RELATIVE PATHS ###
-declare TASK_TIMES_BASH_SCRIPT="/root/AWS_HADOOP_HARNESS/my_task_times.sh"
-declare MAP_TIMES_PERL_FILE="/root/AWS_HADOOP_HARNESS/my_job_map_times.pl"
-declare REDUCE_TIMES_PERL_FILE="/root/AWS_HADOOP_HARNESS/my_job_reduce_times.pl"
+declare TASK_TIMES_BASH_SCRIPT="/root/aws_hadoop_harness/my_task_times.sh"
+declare MAP_TIMES_PERL_FILE="/root/aws_hadoop_harness/my_job_map_times.pl"
+declare REDUCE_TIMES_PERL_FILE="/root/aws_hadoop_harness/my_job_reduce_times.pl"
 #################################################################
 
 # Variables below should not need to be changed
