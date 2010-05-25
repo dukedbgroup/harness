@@ -27,11 +27,7 @@ HADOOP_HOME=`ls -d /usr/local/hadoop-*`
 # Modify this section to customize your Hadoop cluster.
 ################################################################################
 
-cat > $HADOOP_HOME/conf/tmp.txt <<EOF
-this is a test
-EOF
-
-cat > $HADOOP_HOME/conf/core-site.xml <<EOF
+cat > $HADOOP_HOME/conf/hadoop-site.xml <<EOF
 <?xml version="1.0"?>
 <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
 
@@ -46,34 +42,6 @@ cat > $HADOOP_HOME/conf/core-site.xml <<EOF
   <name>fs.default.name</name>
   <value>hdfs://$MASTER_HOST:50001</value>
 </property>
-
-</configuration>
-EOF
-
-cat > $HADOOP_HOME/conf/hdfs-site.xml <<EOF
-<?xml version="1.0"?>
-<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
-
-<configuration>
-
-<property>
-  <name>dfs.client.block.write.retries</name>
-  <value>3</value>
-</property>
-
-<property>
-  <name>dfs.block.size</name>
-  <value>134217728</value>
-</property>
-
-</configuration>
-EOF
-
-cat > $HADOOP_HOME/conf/mapred-site.xml <<EOF
-<?xml version="1.0"?>
-<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
-
-<configuration>
 
 <property>
   <name>mapred.job.tracker</name>
@@ -93,6 +61,16 @@ cat > $HADOOP_HOME/conf/mapred-site.xml <<EOF
 <property>
   <name>mapred.tasktracker.reduce.tasks.maximum</name>
   <value>3</value>
+</property>
+
+<property>
+  <name>dfs.client.block.write.retries</name>
+  <value>3</value>
+</property>
+
+<property>
+  <name>dfs.block.size</name>
+  <value>134217728</value>
 </property>
 
 </configuration>
