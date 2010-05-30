@@ -53,8 +53,8 @@ SSH_OPTS=`echo -i "$PRIVATE_KEY_PATH" -o StrictHostKeyChecking=no -o ServerAlive
 #  Note: HADOOP_VERSION has to be 0.19.0 or less, or 0.20.2. AMIs can be accessed 
 #    for these versions only. Intermediate versions are not supported. 
 #    See launch-hadoop-master and launch-hadoop-slaves
-#HADOOP_VERSION=0.19.0
-HADOOP_VERSION=0.20.2
+HADOOP_VERSION=0.19.0
+#HADOOP_VERSION=0.20.2
 
 # The script to run on instance boot.
 #USER_DATA_FILE=hadoop-ec2-init-remote.sh

@@ -132,9 +132,32 @@ cd ${AWS_HADOOP_HARNESS_HOME}
 ${HADOOP_EC2_HOME}/hadoop-ec2 launch-cluster test-hadoop-cluster 2
 
 NOTE: there are some errors shown related to ganglia that you can ignore.
+These errors happen if Ganglia is not present on the AMI being used
 
-If the command was successful, it will print out the instance IDs and private IPs
-of the 1 Master and the N slaves. In addition, we capture:
+# CHECK OF SUCCESSFUL EXECUTION: you can access the JobTracker web page at:
+http://<replace with public domain name of Hadoop Master>:50030
+
+   1. # Note: you can find the public domain name of the Hadoop master
+      #   using the AWS management console or by running the following 
+      #   command on the local machine and looking for the instance listed under 
+      #   test-hadoop-cluster-master
+      ${EC2_HOME}/bin/ec2-describe-instances 
+
+   2. # Ensure that N slaves have joined the Hadoop cluster by checking 
+      # the "Nodes" column in the Cluster Summary section right 
+      # at the top part of the JobTracker's main page. Please note
+      # that it will take few tens of seconds for all slaves to join the cluster. 
+      # Keep refreshing the JobTracker web page for about a minute. 
+
+   3. # If you don't see N slaves having joined, then it could be that automatic
+      # start of Hadoop on all slaves did not work. Do a manual start by
+      # running the following command on the Hadoop Master on EC2:
+      /root/start_hadoop_on_slaves.sh
+      # After that, perform the check in Step 2 to see whether all N slaves have 
+      #  joined the cluster.
+
+The launch-cluster command, if successful, will also print out the instance IDs 
+and private IPs of the 1 Master and the N slaves. In addition, we capture:
   -- the instance ids of the slaves in the file called SLAVE_INSTANCE_IDS.txt
   -- the AWS private IPs of the slaves in the file called SLAVE_NAMES.txt
 Both these files are in ${AWS_HADOOP_HARNESS_HOME} 
@@ -143,13 +166,6 @@ Both these files are in ${AWS_HADOOP_HARNESS_HOME}
 cat SLAVE_NAMES.txt
 cat SLAVE_NAMES.txt | wc -l
 
-# another check of success: you can access the JobTracker web page at:
-http://<replace with public domain name of Hadoop Master>:50030
-# Note: you can find the public domain name of the Hadoop master
-#   using the AWS management console or by running the following 
-#   command on the local machine and looking for the instance listed under 
-#   test-hadoop-cluster-master
-${EC2_HOME}/bin/ec2-describe-instances 
 
 # Login to the EC2 Hadoop Master node. This command will get you 
 # to the root prompt on the Hadoop Master if all the setup
@@ -256,7 +272,24 @@ mkdir TEMP
 # Run the perl program to generate the input directory for each experiment: 
 perl parser.pl config.1.xml ./TEMP input_dirs.txt
 
-# Note that the above command will create one subdirectory under ./TEMP
+#############################
+# If the above perl command fails, then you are likely using an AMI
+#   that does not have the XML::Simple perl module installed. Install 
+#   it manually by running the following commands on the Master node
+yum install -y perl-CPAN
+
+# open a CPAN shell so that we can install the XML::Simple module
+perl -MCPAN -e shell
+  -- answer no (to avoid manual configuration)
+
+# Enter the following commands in the CPAN shell
+cpan>o conf prerequisites_policy follow
+cpan>o conf commit
+cpan>install XML::Simple
+cpan>exit
+############################
+
+# The above "perl parser.pl ..." command will create one subdirectory under ./TEMP
 #   per experiment. The experiments are run in a random order 
 #   to avoid side-effects. The order in which the experiments will 
 #   be run is the order in input_dirs.txt
