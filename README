@@ -117,6 +117,9 @@ KEY_NAME=[FILL IN with the name of the keypair you created]
 #  if you paid attention to Caveat 1 above.
 PRIVATE_KEY_PATH=`echo "$EC2_KEYDIR"/"id_rsa-$KEY_NAME"`	
 
+# The version of Hadoop to use. For example:
+HADOOP_VERSION=0.20.2
+
 --------------------------------------------------------------
 ----------------------------------------------------------------------------
 
