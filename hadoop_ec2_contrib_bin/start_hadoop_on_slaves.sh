@@ -54,5 +54,11 @@ done
 
 wait
 
-  echo "NOTE: On JobTracker web page, verify that all slave nodes are present (may take a few seconds for all slaves to join)"
-  echo "NOTE: If automatic start failed for any slave, login to Hadoop master node and run /root/start_hadoop_on_slaves.sh"
+  echo ""
+  echo "*********************************************************************"
+  echo "NOTE: On JobTracker web page, verify that all slave nodes have joined"
+  echo "      the cluster (it may take a few seconds for all slaves to join)"
+  echo "NOTE: If automatic start failed for any slave, login to the Hadoop"
+  echo "      master node on EC2 and run /root/start_hadoop_on_slaves.sh"
+  echo "*********************************************************************"
+  echo ""
