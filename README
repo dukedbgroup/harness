@@ -183,9 +183,9 @@ ${HADOOP_EC2_HOME}/hadoop-ec2 login test-hadoop-cluster
 #   then there is some problem -- somehow Hadoop got started in local mode
 ${HADOOP_HOME}/bin/hadoop fs -lsr /
 
-# This command will show all the slaves. Note: it may take a couple of minutes for 
+# This command will show all the slaves. Note: it may take few tens of seconds for 
 #   all slaves to register with the master. The following command should show
-#   N alive workers -- i.e., a line of the form, with N replaced with its value
+#   N alive workers -- i.e., a line of the following form, with N replaced with its value
 #  Datanodes available: N (N total, 0 dead)
 ${HADOOP_HOME}/bin/hadoop dfsadmin -report
 
