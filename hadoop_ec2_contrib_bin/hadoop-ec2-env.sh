@@ -30,7 +30,7 @@ AWS_ACCOUNT_ID=${AWS_USER_ID}
 #AWS_ACCESS_KEY_ID=
 
 # Your Amazon AWS secret access key. Defined in ${HOME}/.my-bash_profile
-#$AWS_SECRET_ACCESS_KEY=
+#AWS_SECRET_ACCESS_KEY=
 
 # Location of EC2 keys.
 # The default setting is probably OK if you set up EC2 following the Amazon Getting Started guide.

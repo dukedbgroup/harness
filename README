@@ -89,8 +89,8 @@ as noted in ${HADOOP_EC2_HOME}/hadoop-ec2-env.sh
 --------------------------------------------------------------
 ----------------------------------------------------------------------------
 	
-Edit all relevant variables in ${HADOOP_EC2_HOME}/hadoop-ec2-env.sh as per:
-http://wiki.apache.org/hadoop/AmazonEC2
+Edit all relevant variables in ${HADOOP_EC2_HOME}/hadoop-ec2-env.sh as listed below
+(see http://wiki.apache.org/hadoop/AmazonEC2 for further help)
 
 # Your Amazon Account Number. Same as ${AWS_USER_ID}
 AWS_ACCOUNT_ID=${AWS_USER_ID}
