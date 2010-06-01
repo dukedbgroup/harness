@@ -26,14 +26,22 @@ fi
 # Your Amazon Account Number.
 AWS_ACCOUNT_ID=${AWS_USER_ID}
 
-# Your Amazon AWS access key. Defined in ${HOME}/.my-bash_profile
+# Your Amazon AWS access key. 
+#  Should already be defined as a global environmental variable 
+#     (e.g., in ${HOME}/.my-bash_profile) if you followed 
+#     the instructions in the README. Hence commented out.
 #AWS_ACCESS_KEY_ID=
 
-# Your Amazon AWS secret access key. Defined in ${HOME}/.my-bash_profile
+# Your Amazon AWS secret access key. 
+#  Should already be defined as a global environmental variable 
+#     (e.g., in ${HOME}/.my-bash_profile) if you followed 
+#     the instructions in the README. Hence commented out.
 #AWS_SECRET_ACCESS_KEY=
 
 # Location of EC2 keys.
-# The default setting is probably OK if you set up EC2 following the Amazon Getting Started guide.
+#  $EC2_PRIVATE_KEY should be defined as a global environmental variable 
+#     (e.g., in ${HOME}/.my-bash_profile) if you followed 
+#     the instructions in the README
 EC2_KEYDIR=`dirname "$EC2_PRIVATE_KEY"`
 
 # The EC2 key name used to launch instances. Change it as needed. 
@@ -41,24 +49,43 @@ KEY_NAME=my-keypair
 # Ned's convention:
 #KEY_NAME="${EC2_KEYPAIR_NAME}"
 
-# Where your EC2 private key is stored (created when following the Amazon Getting Started guide).
+# Where your EC2 private key is stored (created, for example, when following the 
+#    Amazon Getting Started guide).
 PRIVATE_KEY_PATH=`echo "${EC2_KEYDIR}"/"id_rsa-${KEY_NAME}"`
 # Ned's convention:
 #PRIVATE_KEY_PATH=`echo "$EC2_KEYDIR"/"$KEY_NAME"`
 
-# SSH options used when connecting to EC2 instances.
-SSH_OPTS=`echo -i "$PRIVATE_KEY_PATH" -o StrictHostKeyChecking=no -o ServerAliveInterval=30`
-
 # The version of Hadoop to use.
 #  Note: HADOOP_VERSION has to be 0.19.0 or less, or 0.20.2. AMIs can be accessed 
 #    for these versions only. Intermediate versions are not supported. 
-#    See launch-hadoop-master and launch-hadoop-slaves
-#HADOOP_VERSION=0.19.0
-HADOOP_VERSION=0.20.2
+#    See launch-hadoop-master and launch-hadoop-slaves for how the AMI is 
+#      selected based on HADOOP_VERSION
+HADOOP_VERSION=0.19.0
+#HADOOP_VERSION=0.20.2
+
+# The EC2 instance type: m1.small, m1.large, m1.xlarge
+#  NOTE: we do not support AMIs for all types of instances
+INSTANCE_TYPE="m1.small"
+#INSTANCE_TYPE="m1.large"
+#INSTANCE_TYPE="m1.xlarge"
+#INSTANCE_TYPE="c1.medium"
+#INSTANCE_TYPE="c1.xlarge"
+
+###################################################################################
+###################################################################################
+###################################################################################
+#
+# Variables below shouldn't need to be changed
+#
+###################################################################################
+###################################################################################
+###################################################################################
+
+# SSH options used when connecting to EC2 instances.
+SSH_OPTS=`echo -i "$PRIVATE_KEY_PATH" -o StrictHostKeyChecking=no -o ServerAliveInterval=30`
 
 # The script to run on instance boot.
-#USER_DATA_FILE=hadoop-ec2-init-remote.sh
-if [ $HADOOP_VERSION == "0.20.2" ]; then
+if [ $HADOOP_VERSION = "0.20.2" ]; then
   USER_DATA_FILE=hadoop-ec2-init-remote-post-0.20.0.sh
 else 
   USER_DATA_FILE=hadoop-ec2-init-remote-pre-0.20.0.sh
@@ -72,14 +99,6 @@ S3_BUCKET=hadoop-images
 
 # Enable public access to JobTracker and TaskTracker web interfaces
 ENABLE_WEB_PORTS=true
-
-
-# The EC2 instance type: m1.small, m1.large, m1.xlarge
-INSTANCE_TYPE="m1.small"
-#INSTANCE_TYPE="m1.large"
-#INSTANCE_TYPE="m1.xlarge"
-#INSTANCE_TYPE="c1.medium"
-#INSTANCE_TYPE="c1.xlarge"
 
 # The EC2 group master name. CLUSTER is set by calling scripts
 CLUSTER_MASTER=$CLUSTER-master
