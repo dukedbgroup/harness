@@ -60,8 +60,8 @@ PRIVATE_KEY_PATH=`echo "${EC2_KEYDIR}"/"id_rsa-${KEY_NAME}"`
 #    for these versions only. Intermediate versions are not supported. 
 #    See launch-hadoop-master and launch-hadoop-slaves for how the AMI is 
 #      selected based on HADOOP_VERSION
-HADOOP_VERSION=0.19.0
-#HADOOP_VERSION=0.20.2
+#HADOOP_VERSION=0.19.0
+HADOOP_VERSION=0.20.2
 
 # The EC2 instance type: m1.small, m1.large, m1.xlarge
 #  NOTE: we do not support AMIs for all types of instances
