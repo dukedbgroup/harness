@@ -1,1 +1,5 @@
 hadoop_ec2_contrib_bin/local_ec2_settings.sh
+aws_hadoop_harness/SLAVE_INSTANCE_IDS.txt
+aws_hadoop_harness/SLAVE_NAMES.txt
+ec2-api-tools-1.3-51254/
+

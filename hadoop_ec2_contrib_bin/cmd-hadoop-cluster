@@ -60,6 +60,9 @@ elif [ "$COMMAND" = "proxy" ] ; then
 elif [ "$COMMAND" = "push" ] ; then
   echo "Pushing $1 to host $HOST."
   scp $SSH_OPTS -r $1 "root@$HOST:"
+elif [ "$COMMAND" = "pull" ] ; then
+  echo "Pulling $1 from host $HOST."
+  scp $SSH_OPTS -r "root@$HOST:/$1" .
 elif [ "$COMMAND" = "screen" ] ; then
   echo "Logging in and attaching screen on host $HOST."
   ssh $SSH_OPTS -t "root@$HOST" 'screen -D -R'
