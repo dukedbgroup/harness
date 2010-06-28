@@ -55,14 +55,6 @@ PRIVATE_KEY_PATH=`echo "${EC2_KEYDIR}"/"id_rsa-${KEY_NAME}"`
 # Ned's convention:
 #PRIVATE_KEY_PATH=`echo "$EC2_KEYDIR"/"$KEY_NAME"`
 
-# The version of Hadoop to use.
-#  Note: HADOOP_VERSION has to be 0.19.0 or less, or 0.20.2. AMIs can be accessed 
-#    for these versions only. Intermediate versions are not supported. 
-#    See launch-hadoop-master and launch-hadoop-slaves for how the AMI is 
-#      selected based on HADOOP_VERSION
-#HADOOP_VERSION=0.19.0
-HADOOP_VERSION=0.20.2
-
 # The EC2 instance type: m1.small, m1.large, m1.xlarge
 #  NOTE: we do not support AMIs for all types of instances
 INSTANCE_TYPE="m1.small"
@@ -71,11 +63,19 @@ INSTANCE_TYPE="m1.small"
 #INSTANCE_TYPE="c1.medium"
 #INSTANCE_TYPE="c1.xlarge"
 
+# The version of Hadoop to use.
+#  Note: HADOOP_VERSION has to be 0.19.0 or less, or 0.20.2. AMIs can be accessed 
+#    for these versions only. Intermediate versions are not supported. 
+#    See launch-hadoop-master and launch-hadoop-slaves for how the AMI is 
+#      selected based on HADOOP_VERSION
+#HADOOP_VERSION=0.19.0
+HADOOP_VERSION=0.20.2
+
 ###################################################################################
 ###################################################################################
 ###################################################################################
 #
-# Variables below shouldn't need to be changed
+# Variables below usually need not be changed
 #
 ###################################################################################
 ###################################################################################
@@ -108,12 +108,13 @@ MASTER_PRIVATE_IP_PATH=~/.hadooop-private-$CLUSTER_MASTER
 MASTER_IP_PATH=~/.hadooop-$CLUSTER_MASTER
 MASTER_ZONE_PATH=~/.hadooop-zone-$CLUSTER_MASTER
 
+######################################################################
 #
-# The following variables are only used when creating an AMI.
+# The following variables are primarily used when creating an AMI.
 #
 
 # The version number of the installed JDK.
-JAVA_VERSION=1.6.0_16
+JAVA_VERSION=1.6.0_20
 
 # SUPPORTED_ARCHITECTURES = ['i386', 'x86_64']
 # The download URL for the Sun JDK. Visit http://java.sun.com/javase/downloads/index.jsp and get the URL for the "Linux self-extracting file".
@@ -138,3 +139,20 @@ fi
 if [ "$AMI_KERNEL" != "" ]; then
   KERNEL_ARG="--kernel ${AMI_KERNEL}"
 fi
+
+######################################################################
+
+# Finding Hadoop image. See https://wiki.duke.edu/display/hadoop/List+of+Current+AMI+Images
+# AMI ami-5729c03e: Ned created with Hadoop 0.20.2
+# AMI ami-0153ba68: Shivnath created with Hadoop 0.20.2 and Ganglia (DEPRECATED)
+# AMI ami-2817ff41: Shivnath created with Hadoop 0.20.2, Ganglia, and BTrace
+if [ $HADOOP_VERSION = "0.20.2" ]; then
+   # AMI_IMAGE="ami-5729c03e"
+   # AMI_IMAGE="ami-0153ba68"
+   AMI_IMAGE="ami-2817ff41"
+else 
+   # This part will only work for $HADOOP_VERSION being 0.19.0 or less 
+   AMI_IMAGE=`ec2-describe-images -a | grep $S3_BUCKET | grep $HADOOP_VERSION | grep $ARCH | grep available | awk '{print $2}'`   
+fi
+
+######################################################################
