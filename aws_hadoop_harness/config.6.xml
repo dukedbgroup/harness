@@ -1,0 +1,29 @@
+<?xml version='1.0'?>
+<configuration>
+	<property>
+		<name>mapred.reduce.tasks</name>
+                <description>Number of reduce tasks</description>
+                <numvalues>2</numvalues>
+		<value_delimitter>|</value_delimitter>
+		<values>10|50</values>
+	</property>
+	<property>
+		<name>mapred.child.java.opts</name>
+                <description>Java opts for the task tracker child processes</description>
+                <numvalues>1</numvalues>
+		<values>-Xmx200m</values>
+	</property>
+	<property>
+		<name>io.sort.mb</name>
+                <description>Memory for sort buffer at the Map side</description>
+                <numvalues>1</numvalues>
+		<values>150</values>
+	</property>
+	<property>
+		<name>mapred.task.profile.params</name>
+                <description>Parameters for JVM profiling</description>
+                <numvalues>2</numvalues>
+		<value_delimitter>|</value_delimitter>
+		<values>-Xshare:off -javaagent:/root/BTRACE/build/btrace-agent.jar=dumpClasses=false,debug=false,unsafe=false,probeDescPath=.,noServer=true,script=/root/BTRACE/script/Profile1.class,scriptOutputFile=%s | -Xshare:off -javaagent:/root/BTRACE/build/btrace-agent.jar=dumpClasses=false,debug=false,unsafe=false,probeDescPath=.,noServer=true,script=/root/BTRACE/script/Profile2.class,scriptOutputFile=%s </values>
+	</property>
+</configuration>

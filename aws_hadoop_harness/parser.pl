@@ -18,6 +18,11 @@ use Data::Dumper;
 # Name of the XML configuration file produced for each experiment (in its own directory)
 my $XML_CONF_FILE_NAME = "configuration.xml";
 
+# The default delimitter that separates multiple values in the 
+#    XML configuration file specified as input. This field can be overridden
+#    for any parameter by specifying a value_delimitter field 
+my $DEFAULT_VALUE_DELIMITTER = ",";
+
 # if #arguments is incorrect, print usage
 my ($numargs) = $#ARGV + 1;
 
@@ -52,6 +57,7 @@ my $curr_pnum = 0;
 # total number of experiments
 my $total_expts = 1;
 my @NUM_VALUES_ARR = ();
+my $value_delimitter;
 
 print "------------\n";
 
@@ -59,9 +65,9 @@ foreach $e (@{$data->{property}}) {
     
     $curr_pnum = $num_params + 1;
     print "Parameter $curr_pnum:\n";    
-
-    print $e->{name}, "\n";
-    print $e->{numvalues}, "\n";
+    
+    print "parameter name = ", $e->{name}, "\n";
+    print "number of values = ", $e->{numvalues}, "\n";
     
     if ($e->{numvalues} <= 0) {
 	print "ERROR: Incorrect specification of numvalues tag for property " . $e->{name} . "\n";
@@ -78,13 +84,29 @@ foreach $e (@{$data->{property}}) {
 	$total_expts *= $e->{numvalues};
     }
 
+    if (!defined($e->{value_delimitter}) || $e->{value_delimitter} eq "") {
+	$value_delimitter = $DEFAULT_VALUE_DELIMITTER;
+    }
+    else {
+	if ($e->{value_delimitter} eq "|") {
+	    # We have to add an escape character to use "|" as a delimitter in split
+	    $value_delimitter = "\\|";
+	}
+	else {
+	    $value_delimitter = $e->{value_delimitter};
+	}
+    }
+    
+    print "value delimitter = $value_delimitter\n";
+    
     $num_vals = 0;
-
+    
     unless (!defined($e->{values}) || $e->{values} eq "") {
 	print $e->{values}, "\n";
-	@values = split (/,/, $e->{values});
+	@values = split (/$value_delimitter/, $e->{values});
 	$num_vals = $#values + 1;
     }
+
     
     unless ($num_vals == $e->{numvalues}) {
 	print "ERROR: Incorrect specification of numvalues tag for property " . $e->{name} . "\n";
@@ -136,7 +158,20 @@ foreach $e (@{$data->{property}}) {
 	}
     }    
     
-    @values = split (/,/, $e->{values});
+    if (!defined($e->{value_delimitter}) || $e->{value_delimitter} eq "") {
+	$value_delimitter = $DEFAULT_VALUE_DELIMITTER;
+    }
+    else {
+	if ($e->{value_delimitter} eq "|") {
+	    # We have to add an escape character to use "|" as a delimitter in split
+	    $value_delimitter = "\\|";
+	}
+	else {
+	    $value_delimitter = $e->{value_delimitter};
+	}
+    }
+    
+    @values = split (/$value_delimitter/, $e->{values});
     
     my $index = -1;
     my ($a, $b, $c);
