@@ -40,14 +40,14 @@ if [ ! -f $MASTER_IP_PATH ]; then
   exit -1
 fi
 
-# Finding Hadoop image
+# Finding Hadoop image. See https://wiki.duke.edu/display/hadoop/List+of+Current+AMI+Images
+# AMI ami-5729c03e is an image that Ned created with Hadoop 0.20.2
+# AMI ami-0153ba68 is an image that Shivnath created with Hadoop 0.20.2 and Ganglia
+# AMI ami-2817ff41 is an image that Shivnath created with Hadoop 0.20.2, Ganglia, and BTrace
 if [ $HADOOP_VERSION = "0.20.2" ]; then
-   # AMI ami-5729c03e is an image that Ned created with Hadoop 0.20.2: 
-   #    https://wiki.duke.edu/display/hadoop/List+of+Current+AMI+Images
    # AMI_IMAGE="ami-5729c03e"
-   # AMI ami-0153ba68 is an image that Shivnath created with Hadoop 0.20.2 and Ganglia:
-   #    https://wiki.duke.edu/display/hadoop/List+of+Current+AMI+Images
-   AMI_IMAGE="ami-0153ba68"
+   # AMI_IMAGE="ami-0153ba68"
+   AMI_IMAGE="ami-2817ff41"
 else 
    # This part will only work for $HADOOP_VERSION being 0.19.0 or less 
    AMI_IMAGE=`ec2-describe-images -a | grep $S3_BUCKET | grep $HADOOP_VERSION | grep $ARCH | grep available | awk '{print $2}'`   
