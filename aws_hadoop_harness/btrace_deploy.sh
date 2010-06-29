@@ -10,10 +10,10 @@
 usage0="Purpose: Given a BTrace script, compile it & deploy compiled .class file on all slaves"
 usage1="Usage: $0 btrace_java_script [full_path_to_output_class_file]"
 usage2="Requirements:"
-usage3="- btrace_java_script should have .java extension and NOT have a package definition"
-usage4="-   that causes .class file to be written to directory other than current working dir"
-usage5="- BTRACE_HOME should be defined as an environmental variable"
-usage6="- By default, compiled file is deployed as <BTRACE_HOME>/scripts/Profile.class"
+usage3="1. btrace_java_script should have .java extension and NOT have a package definition"
+usage4="     that causes .class file to be written to directory other than current working dir"
+usage5="2. BTRACE_HOME should be defined as an environmental variable"
+usage6="3. By default, compiled file is deployed as <BTRACE_HOME>/script/Profile.class"
 
 
 # if no args specified, show usage
@@ -50,7 +50,7 @@ if [ $# -eq 2 ]; then
   PROFILE_CLASS_FILE="$2"
 else 
 # The compiled BTrace .class file is copied here by default on all EC2 slave nodes
-  PROFILE_CLASS_FILE="${BTRACE_HOME}/scripts/Profile.class"
+  PROFILE_CLASS_FILE="${BTRACE_HOME}/script/Profile.class"
 fi
 
 # The list of slaves in this Hadoop cluster. Same format as the slaves file in Hadoop -- one slave per line 
@@ -95,12 +95,12 @@ $BTRACE_HOME/bin/btracec "$1"
 if [ ! -e "${btrace_class_name}.class" ]; then
   echo "Error: ${btrace_class_name}.class file not found. Compilation failed"
   echo "NOTE: $btrace_java_file should NOT have a package definition that causes"
-  echo "   .class file to be written to a directory other than current working directory"
+  echo "      the .class file to be written to a directory other than current working directory"
   printf "Exiting\n"
   exit -1
 fi
 
-exit 0
+echo "Compiled successfully. Deploying ${btrace_class_name}.class to all slaves at ${PROFILE_CLASS_FILE}"
 
 #  For each slave host
 for slave in `cat "$HOSTLIST"|sed  "s/#.*$//;/^$/d"`; do
