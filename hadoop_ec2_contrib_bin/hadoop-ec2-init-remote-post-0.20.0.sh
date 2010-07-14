@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 
 ################################################################################
-# Script that is run on each EC2 instance on boot. It is passed in the EC2 user
-# data, so should not exceed 16K in size.
+# Script that is run on each EC2 instance used as a Hadoop node
 ################################################################################
 
 ################################################################################

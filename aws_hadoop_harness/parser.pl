@@ -7,10 +7,6 @@
 # http://www.ibm.com/developerworks/xml/library/x-xmlperl1.html#N100BC
 # http://www.tutorialized.com/view/tutorial/XML-Simple-Module/12239
 
-#
-#See tmp.pl for an example on how to create an XML document using XML::Simple
-#
-
 # use module
 use XML::Simple;
 use Data::Dumper;
