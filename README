@@ -269,9 +269,6 @@ less config.1.xml
 # For nano commands, see: http://mintaka.sdsu.edu/reu/nano.html
 nano config.1.xml
 
-# Create the TEMP directory
-mkdir TEMP
-
 # Run the perl program to generate the input directory for each experiment: 
 perl parser.pl config.1.xml ./TEMP input_dirs.txt
 

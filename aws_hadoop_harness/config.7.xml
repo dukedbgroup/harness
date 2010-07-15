@@ -26,7 +26,7 @@
         <property>
                 <name>io.sort.mb</name>
 	        <numvalues>1</numvalues>
-                <values>175</values>
+                <values>150</values>
         </property>
         <property>
                 <name>io.sort.spill.percent</name>
