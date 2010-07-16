@@ -276,8 +276,8 @@ for ($i = 0; $i < $total_expts; $i++) {
 		# where ${exptID} is an identifier for the experiment. For example, 
 		# if we specified jar_output_prefix as /user/shivnath/tera/out,
 		# then the output directory for the Experiment 1 will be
-		# /user/shivnath/tera/out/expt1
-		$hdfs_output_path = $ARR[$i][$pnum] . "/expt" . "$i";
+		# /user/shivnath/tera/out/EXPT1
+		$hdfs_output_path = $ARR[$i][$pnum] . "/EXPT" . "$i";
 		
 		# should the hdfs output be deleted when the experiment completes
 		if (defined($e->{delete_on_exit}) && ($e->{delete_on_exit} eq "false")) {
@@ -337,18 +337,24 @@ chdir $CURR_DIR;
 # finally: write the file that contains the list of output directories
 
 my @nums = gen_random_permutation($total_expts);
-print "\n@nums \n";
 
-open (OUT, ">$ARGV[2]")
-    || quit ("FATAL ERROR: Could not open \"$ARGV[2]\"");
+# the random permutation is in the 1..num_expts range -- adjust it to 0..(num_expts-1)
+for ($i = 0; $i < $total_expts; $i++) {
+    $nums[$i] = $nums[$i] - 1;
+    unless ($nums[$i] >= 0 && $nums[$i] < $total_expts) {
+        print "ERROR: Invalid experiment ID: $nums[$i]. BUG in the randomization of experiments. Exiting\n";
+        exit -1;
+    }
+}
+print "\nRandomized experiment list:\n";
+print "@nums \n";
+
+open (OUT, ">$ARGV[2]") || quit ("FATAL ERROR: Could not open \"$ARGV[2]\"");
 
 my $full_path_to_expt_dir = "";
 
 for ($i = 0; $i < $total_expts; $i++) {
-# the random permutation is in the 1..num_expts range
-    $j = $nums[$i] - 1;
-
-    $dir_name = $EXP_BASE_DIR . "/EXPT$j";
+    $dir_name = $EXP_BASE_DIR . "/EXPT$nums[$i]";
 
     chdir $dir_name;
     $full_path_to_expt_dir=`pwd`;
