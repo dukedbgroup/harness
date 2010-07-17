@@ -31,6 +31,15 @@ my $HADOOP_JAR_COMMAND_SCRIPT = "run_hadoop_jar.sh";
 # The output of the hadoop command is written to this file (in each experiment directory)
 my $EXPERIMENT_OUTPUT_FILE = "output.txt";
 
+# This is a file that is created in the base directory for experiments that lists the  
+#  experiment number and parameter configuration 
+my $EXPERIMENT_DESIGN_FILE = "DESIGN.txt";
+
+# For reference purposes, we copy the input configuration file and randomized experiment 
+#  listing file to the experiment base directory under the following names respectively 
+my $COPY_OF_INPUT_XML_CONFIGURATION_FILE = "CONFIG_INPUT.xml";
+my $RANDOMIZED_EXPERIMENT_LIST_FILE = "RANDOMIZED_EXPERIMENT_LIST.txt";
+
 #####################################################################################
 
 # if #arguments is incorrect, print usage
@@ -43,9 +52,13 @@ if ($numargs != 3) {
     exit -1;
 }
 
-# create object
+unless (-e $ARGV[0]) {
+    print "ERROR: invalid XML config file. Exiting.\n";
+    exit -1;    
+}
+
+# read XML file -- see links at beginning of this program for how to use XML::Simple 
 my $xml = new XML::Simple (KeyAttr=>[]);
-# read XML file
 my $data = $xml->XMLin($ARGV[0]);
 
 my $EXP_BASE_DIR = $ARGV[1];
@@ -61,6 +74,9 @@ if (-d $EXP_BASE_DIR) {
 
 # Global variables -- begin 
 
+# PARAM_NAMES_ARR will contain the name (i.e., <name>jar_path</name>)
+#   specified for each parameter 
+my @PARAM_NAMES_ARR = ();
 # NUM_VALUES_ARR will contain the numvalues (i.e., <numvalues>2</numvalues>)
 #   specified for each parameter 
 my @NUM_VALUES_ARR = ();
@@ -72,28 +88,38 @@ my @TYPES_ARR = ();
 #   Note that $DEFAULT_VALUE_DELIMITTER = ",";
 my @VALUES_DELIMITTER_ARR = ();
 
+# This is the 2D array where we will store the parameter values for each 
+# experiment on a row-by-row basis. The columns correspond 1-to-1 to the 
+# parameters.
+my @ARR = ();
+
 # number of parameters 
 my $num_params = 0;
 # total number of experiments
 my $total_expts = 1;
 
+my $CURR_DIR=`pwd`;
+chomp($CURR_DIR);
+
 # Global variables -- end
 
 ########################################################################
 
-# temporary variables used in the code below 
+# temporary variables used in the code
 my @values = ();
 my $num_vals = -1;
-my $curr_pnum = 0;
+my $pnum = -1;
 my $value_delimitter;
+my $dir_name = "";
+my $i = 0;
+my $j = 0;
 
-print "------------\n";
+########################################################################
 
 foreach $e (@{$data->{property}}) {
     
-    $curr_pnum = $num_params + 1;
-    print "Parameter $curr_pnum:\n";    
-    print "parameter name = ", $e->{name}, "\n";
+    $PARAM_NAMES_ARR[$num_params] = $e->{name};
+    #print "parameter name = ", $e->{name}, "\n";
     
     # parameter type 
     if (defined($e->{type})) {
@@ -101,11 +127,11 @@ foreach $e (@{$data->{property}}) {
     }
     else {
 	$TYPES_ARR[$num_params] = $MAPREDUCE_JOBCONF_TYPE;
-	print "NOTE: parameter type was unspecified, so using the default type of $MAPREDUCE_JOBCONF_TYPE\n";
+#	print "NOTE: parameter type was unspecified, so using the default type of $MAPREDUCE_JOBCONF_TYPE\n";
     }
-    print "parameter type = $TYPES_ARR[$num_params]\n";	
-
-    print "number of values = ", $e->{numvalues}, "\n";
+#    print "parameter type = $TYPES_ARR[$num_params]\n";	
+    
+#    print "number of values = ", $e->{numvalues}, "\n";
     if ($e->{numvalues} <= 0) {
 	print "ERROR: numvalues for property " . $e->{name} . " should be > 0. Exiting\n";
 	exit -1;
@@ -128,11 +154,11 @@ foreach $e (@{$data->{property}}) {
 	}
     }
     
-    print "value delimitter = $VALUES_DELIMITTER_ARR[$num_params]\n";
+#    print "value delimitter = $VALUES_DELIMITTER_ARR[$num_params]\n";
     
     $num_vals = 0;
     unless (!defined($e->{values}) || $e->{values} eq "") {
-	print $e->{values}, "\n";
+	#print $e->{values}, "\n";
 	@values = split (/$VALUES_DELIMITTER_ARR[$num_params]/, $e->{values});
 	$num_vals = $#values + 1;
     }
@@ -145,19 +171,9 @@ foreach $e (@{$data->{property}}) {
     $num_params += 1;
     $total_expts *= $e->{numvalues};
 
-    print "------------\n";
 }
 
-print "Number of parameters is $num_params\n";
-print "Total number of experiments is $total_expts\n";
-
-# This is the 2D array where we will store the parameter values for each 
-# experiment on a row-by-row basis. The columns correspond 1-to-1 to the 
-# parameters.
-my @ARR = ();
-
-my $i = 0;
-my $j = 0;
+#print "Number of parameters: $num_params, Total number of experiments: $total_expts\n";
 
 for ($i = 0; $i < $total_expts; $i++) {
     for ($j = 0; $j < $num_params; $j++) {
@@ -166,7 +182,7 @@ for ($i = 0; $i < $total_expts; $i++) {
 }     
 
 # for each param
-my $pnum = -1;
+$pnum = -1;
 foreach $e (@{$data->{property}}) {
     $pnum ++;
     
@@ -200,17 +216,7 @@ foreach $e (@{$data->{property}}) {
     
 } # for param pnum
 
-print "\n***************************************************\n";
-print "The List of Experiments\n";
-for ($i = 0; $i < $total_expts; $i++) {
-    print "$ARR[$i][0]";
-    for ($j = 1; $j < $num_params; $j++) {
-	print ", $ARR[$i][$j]";
-    }      
-    print "\n";
-}     
-print "***************************************************\n";
-
+# 
 
 # At the point, the list of experiments is ready. We now have to 
 #   create a directory for each experiment. The directory should contain: 
@@ -218,12 +224,6 @@ print "***************************************************\n";
 #         (this XML file is named $XML_CONF_FILE_NAME = "configuration.xml")
 #   -- a script to run the corresponding Hadoop MapReduce job
 #         (this script is named $HADOOP_JAR_COMMAND_SCRIPT = "run_hadoop_jar.sh")
-
-my $CURR_DIR=`pwd`;
-chomp($CURR_DIR);
-print "Current directory is $CURR_DIR\n";
-
-my $dir_name = "";
 
 for ($i = 0; $i < $total_expts; $i++) {
     
@@ -236,7 +236,7 @@ for ($i = 0; $i < $total_expts; $i++) {
 	exit -1;    
     }
     
-    print "Making directory $dir_name\n";
+    #print "Making directory $dir_name\n";
     `mkdir -p $dir_name`;
     `chmod 755 $dir_name`;
     
@@ -346,9 +346,35 @@ for ($i = 0; $i < $total_expts; $i++) {
         exit -1;
     }
 }
-print "\nRandomized experiment list:\n";
-print "@nums \n";
+#print "\nRandomized experiment list:\n";
+#print "@nums \n";
 
+# Create the table of contents file that listing the experiments that will be done
+chdir $EXP_BASE_DIR;
+open (OUT, ">$EXPERIMENT_DESIGN_FILE") || quit ("FATAL ERROR: Could not open \"$EXPERIMENT_DESIGN_FILE\"");
+# print the schema: EXPT_ID followed by one column per parameter 
+print OUT "EXPT_ID"; 
+for ($i = 0; $i < $num_params; $i++) {
+    print OUT "\t$PARAM_NAMES_ARR[$i]";
+}
+print OUT "\n";
+# print the list of experiments 
+for ($i = 0; $i < $total_expts; $i++) {
+    print OUT "EXPT$i";
+    for ($j = 0; $j < $num_params; $j++) {
+	print OUT "\t$ARR[$i][$j]";
+    }      
+    print OUT "\n";
+}
+close OUT;
+
+print "\n***************Experiment Design***************\n";
+print `cat $EXPERIMENT_DESIGN_FILE`;
+
+# come back to the current working directory 
+chdir $CURR_DIR;
+
+# Create the file that lists the randomized list of experiment directories 
 open (OUT, ">$ARGV[2]") || quit ("FATAL ERROR: Could not open \"$ARGV[2]\"");
 
 my $full_path_to_expt_dir = "";
@@ -365,6 +391,14 @@ for ($i = 0; $i < $total_expts; $i++) {
 }
 
 close OUT;
+
+print "\n***************Randomized Order for Experiments***************\n";
+print `cat $ARGV[2]` . "\n";
+
+# for reference purposes, copy the input configuration file and randomized experiment 
+#  listing file to the experiment base directory 
+`cp $ARGV[0] $EXP_BASE_DIR/$COPY_OF_INPUT_XML_CONFIGURATION_FILE`;
+`cp $ARGV[2] $EXP_BASE_DIR/$RANDOMIZED_EXPERIMENT_LIST_FILE`;
 
 exit 0;
 
