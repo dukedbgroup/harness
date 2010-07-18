@@ -35,6 +35,10 @@ my $EXPERIMENT_OUTPUT_FILE = "output.txt";
 #  experiment number and parameter configuration 
 my $EXPERIMENT_DESIGN_FILE = "DESIGN.txt";
 
+# The job history files for each experiment stored in this subdirectory in the 
+#    directory for that experiment 
+my $EXPERIMENT_HISTORY_DIR = "history";
+
 # For reference purposes, we copy the input configuration file and randomized experiment 
 #  listing file to the experiment base directory under the following names respectively 
 my $COPY_OF_INPUT_XML_CONFIGURATION_FILE = "CONFIG_INPUT.xml";
@@ -304,19 +308,40 @@ for ($i = 0; $i < $total_expts; $i++) {
     # command to run the jar. Note: this command did not work when the -conf option
     #    was put after the input params and the output path 
     $hadoop_run_jar_command = '${HADOOP_HOME}' . "/bin/hadoop jar $jar_path $jar_class_name -conf $XML_CONF_FILE_NAME $jar_input_params $hdfs_output_path" . " >& $EXPERIMENT_OUTPUT_FILE &";
+    # command to delete the HDFS output dir created for the experiment
     $hadoop_delete_hdfs_output_command = '${HADOOP_HOME}' . "/bin/hadoop fs -rmr $hdfs_output_path";
+    # command to get the job history files for the experiment
+    $hadoop_get_job_history_command = '${HADOOP_HOME}' . "/bin/hadoop fs -copyToLocal $hdfs_output_path/_logs/history $EXPERIMENT_HISTORY_DIR";
+    # command to get the job history summary for the experiment
+    $hadoop_job_history_summary_command = '${HADOOP_HOME}' . "/bin/hadoop job -history all $hdfs_output_path >$EXPERIMENT_HISTORY_DIR/READABLE_SUMMARY.txt";
+
     `echo '#!/usr/bin/env bash' >$HADOOP_JAR_COMMAND_SCRIPT`;
+    `echo >>$HADOOP_JAR_COMMAND_SCRIPT`;
     `echo 'printf "Going to run the command: %s\\n" "$hadoop_delete_hdfs_output_command"' >>$HADOOP_JAR_COMMAND_SCRIPT`;
     `echo '$hadoop_delete_hdfs_output_command' >>$HADOOP_JAR_COMMAND_SCRIPT`;
     `echo 'printf "Finished running the command: %s\\n" "$hadoop_delete_hdfs_output_command"' >>$HADOOP_JAR_COMMAND_SCRIPT`;
+    `echo >>$HADOOP_JAR_COMMAND_SCRIPT`;
     `echo 'printf "Going to run the command: %s\\n" "$hadoop_run_jar_command"' >>$HADOOP_JAR_COMMAND_SCRIPT`;
     `echo '$hadoop_run_jar_command' >>$HADOOP_JAR_COMMAND_SCRIPT`;
     `echo 'wait \$!' >>$HADOOP_JAR_COMMAND_SCRIPT`; 
     `echo 'printf "Finished running the command: %s\\n" "$hadoop_run_jar_command"' >>$HADOOP_JAR_COMMAND_SCRIPT`;
+    `echo >>$HADOOP_JAR_COMMAND_SCRIPT`;
+
+    `echo 'printf "Going to run the command: %s\\n" "$hadoop_get_job_history_command"' >>$HADOOP_JAR_COMMAND_SCRIPT`;
+    `echo '$hadoop_get_job_history_command' >>$HADOOP_JAR_COMMAND_SCRIPT`;
+    `echo 'printf "Finished running the command: %s\\n" "$hadoop_get_job_history_command"' >>$HADOOP_JAR_COMMAND_SCRIPT`;
+    `echo >>$HADOOP_JAR_COMMAND_SCRIPT`;
+
+    `echo 'printf "Going to run the command: %s\\n" "$hadoop_job_history_summary_command"' >>$HADOOP_JAR_COMMAND_SCRIPT`;
+    `echo '$hadoop_job_history_summary_command' >>$HADOOP_JAR_COMMAND_SCRIPT`;
+    `echo 'printf "Finished running the command: %s\\n" "$hadoop_job_history_summary_command"' >>$HADOOP_JAR_COMMAND_SCRIPT`;
+    `echo >>$HADOOP_JAR_COMMAND_SCRIPT`;
+
     if ($delete_hdfs_output_on_exit == 1) {
 	`echo 'printf "Going to run the command: %s\\n" "$hadoop_delete_hdfs_output_command"' >>$HADOOP_JAR_COMMAND_SCRIPT`;
 	`echo '$hadoop_delete_hdfs_output_command' >>$HADOOP_JAR_COMMAND_SCRIPT`;
 	`echo 'printf "Finished running the command: %s\\n" "$hadoop_delete_hdfs_output_command"' >>$HADOOP_JAR_COMMAND_SCRIPT`;
+        `echo >>$HADOOP_JAR_COMMAND_SCRIPT`;
     }
     `chmod 544 $HADOOP_JAR_COMMAND_SCRIPT`; 
     
