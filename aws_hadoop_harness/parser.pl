@@ -13,7 +13,6 @@ use Data::Dumper;
 # the parameter types that can appear in the input XML configuration file 
 my $MAPREDUCE_JOBCONF_TYPE = "MAPREDUCE_JOBCONF"; # for the configuration parameters
 my $HADOOP_JAR_TYPE = "HADOOP_JAR"; # for generating the hadoop jar command 
-my $TASKTRACKER_SETUP_TYPE = "TASKTRACKER_SETUP"; # tasktracker specific parameters
 
 # The default delimitter that separates multiple values in the 
 #    XML configuration file specified as input. This field can be overridden
@@ -28,7 +27,7 @@ my $XML_CONF_FILE_NAME = "configuration.xml";
 # Name of the hadoop command script produced for each experiment (in its own directory)
 my $HADOOP_JAR_COMMAND_SCRIPT = "run_hadoop_jar.sh";
 
-# The output of the hadoop command is written to this file (in each experiment directory)
+# The output of the hadoop jar command is written to this file (in each experiment directory)
 my $EXPERIMENT_OUTPUT_FILE = "output.txt";
 
 # This is a file that is created in the base directory for experiments that lists the  
@@ -44,39 +43,56 @@ my $EXPERIMENT_HISTORY_DIR = "history";
 my $COPY_OF_INPUT_XML_CONFIGURATION_FILE = "CONFIG_INPUT.xml";
 my $RANDOMIZED_EXPERIMENT_LIST_FILE = "RANDOMIZED_EXPERIMENT_LIST.txt";
 
+# if the following flag is set to false, the experiments will not be 
+#   run in a random order. Instead, the 0,..,N-1 order will be used 
+my $SHOULD_RANDOMIZE = "true";
+
 #####################################################################################
 
 # if #arguments is incorrect, print usage
 my ($numargs) = $#ARGV + 1;
 
-if ($numargs != 3) {
+if ($numargs != 2) {
     #$^X is the name of this executable
-    print "USAGE: " . $^X . " " . $0 . " <name of XML config file> <base directory for experiments> <output file containing list of experiment directories>\n";
-    print "NOTE: For $0 to run, the base directory should not exist. It will be created by the program.\n";
+    print "USAGE: " . $^X . " " . $0 . " <name of XML config file> <base directory for experiments>\n";
+    print "NOTE: For $0 to run, the base directory should not exist; it will be created.\n";
     exit -1;
 }
 
-unless (-e $ARGV[0]) {
-    print "ERROR: invalid XML config file. Exiting.\n";
+if (-d $ARGV[1]) {
+    print "ERROR: $ARGV[1] already exists. Please specify a different base directory for experiments.\n";
+    print "NOTE: For $0 to run, the base directory should not exist; it will be created.\n";
+    print "USAGE: " . $^X . " " . $0 . " <name of XML config file> <base directory for experiments>\n";
     exit -1;    
 }
 
-# read XML file -- see links at beginning of this program for how to use XML::Simple 
-my $xml = new XML::Simple (KeyAttr=>[]);
-my $data = $xml->XMLin($ARGV[0]);
-
+# create the base directory for experiments -- Note this mkdir command is called 
+#  from $CURR_DIR. Irrespective of whether $EXP_BASE_DIR is specified as a 
+#  relative or absolute path, chdir to $EXP_BASE_DIR will work as long as it is 
+#  from $CURR_DIR 
+my $CURR_DIR=`pwd`;
+chomp($CURR_DIR);
 my $EXP_BASE_DIR = $ARGV[1];
+`mkdir -p $EXP_BASE_DIR`;
+`chmod 755 $EXP_BASE_DIR`;
 
-if (-d $EXP_BASE_DIR) {
-    print "ERROR: $EXP_BASE_DIR already exists. Please specify a different base directory for experiments. Exiting.\n";
-    print "NOTE: For $0 to run, the base directory should not exist. It will be created by the program.\n";
-    print "USAGE: " . $^X . " " . $0 . " <name of XML config file> <base directory for experiments> <output file containing list of experiment directories>\n";
-    exit -1;    
+unless (-d $EXP_BASE_DIR) {
+    error_exit_with_cleanup("Unable to create the base directory for experiments: $EXP_BASE_DIR");
+}
+
+# don't move this statement up because error_exit_with_cleanup removes the directory
+#   $EXP_BASE_DIR. If this directory exists already, then we don't want it to get deleted
+unless (-e $ARGV[0]) {
+    error_exit_with_cleanup("Invalid XML config file");
 }
 
 ########################################################################
 
 # Global variables -- begin 
+
+# read XML file -- see links at beginning of this program for how to use XML::Simple 
+my $xml = new XML::Simple (KeyAttr=>[]);
+my $data = $xml->XMLin($ARGV[0]);
 
 # PARAM_NAMES_ARR will contain the name (i.e., <name>jar_path</name>)
 #   specified for each parameter 
@@ -102,9 +118,6 @@ my $num_params = 0;
 # total number of experiments
 my $total_expts = 1;
 
-my $CURR_DIR=`pwd`;
-chomp($CURR_DIR);
-
 # Global variables -- end
 
 ########################################################################
@@ -120,6 +133,7 @@ my $j = 0;
 
 ########################################################################
 
+# read the properties specified in the input XML configuration file 
 foreach $e (@{$data->{property}}) {
     
     $PARAM_NAMES_ARR[$num_params] = $e->{name};
@@ -137,8 +151,7 @@ foreach $e (@{$data->{property}}) {
     
 #    print "number of values = ", $e->{numvalues}, "\n";
     if ($e->{numvalues} <= 0) {
-	print "ERROR: numvalues for property " . $e->{name} . " should be > 0. Exiting\n";
-	exit -1;
+	error_exit_with_cleanup("numvalues for property " . $e->{name} . " should be > 0");
     }
 
     # number of distinct settings for this parameter
@@ -168,8 +181,8 @@ foreach $e (@{$data->{property}}) {
     }
     
     unless ($num_vals == $e->{numvalues}) {
-	print "ERROR: numvalues for property " . $e->{name} . " does not match the values specified. Exiting\n";
-	exit -1;
+	error_exit_with_cleanup("numvalues for property " . $e->{name} . " does not match the values specified");
+
     }
 
     $num_params += 1;
@@ -179,13 +192,15 @@ foreach $e (@{$data->{property}}) {
 
 #print "Number of parameters: $num_params, Total number of experiments: $total_expts\n";
 
+
+# The following for and foreach loops will initialize $ARR[$i][$j] based on the 
+#  crossproduct of the specified parameter value lists
 for ($i = 0; $i < $total_expts; $i++) {
     for ($j = 0; $j < $num_params; $j++) {
 	$ARR[$i][$j] = -1;
     }      
 }     
 
-# for each param
 $pnum = -1;
 foreach $e (@{$data->{property}}) {
     $pnum ++;
@@ -220,8 +235,6 @@ foreach $e (@{$data->{property}}) {
     
 } # for param pnum
 
-# 
-
 # At the point, the list of experiments is ready. We now have to 
 #   create a directory for each experiment. The directory should contain: 
 #   -- an XML configuration that will specify the corresponding parameter values
@@ -231,13 +244,14 @@ foreach $e (@{$data->{property}}) {
 
 for ($i = 0; $i < $total_expts; $i++) {
     
+    chdir $EXP_BASE_DIR;
+    
     # create the directory for this experiment
-    $dir_name = $EXP_BASE_DIR . "/EXPT$i";
+    $dir_name = "EXPT$i";
     
     if (-d $dir_name) {
-	print "ERROR: Expt directory \"$dir_name\" already exists\n";
-	print "Exiting\n";
-	exit -1;    
+	# this shouldn't happen
+	error_exit_with_cleanup("Directory $dir_name already exists in the base directory for experiments");
     }
     
     #print "Making directory $dir_name\n";
@@ -289,21 +303,15 @@ for ($i = 0; $i < $total_expts; $i++) {
 		}
 	    }
 	    else {
-		print "ERROR: parameter " . $e->{name} . " of type $HADOOP_JAR_TYPE is not supported. Exiting\n";
-		exit -1;		
+		error_exit_with_cleanup("Parameter " . $e->{name} . " of type $HADOOP_JAR_TYPE is not supported");
 	    }
 	}
-	elsif ($TYPES_ARR[$pnum] eq $TASKTRACKER_SETUP_TYPE) {
-	    print "ERROR: parameter " . $e->{name} . " has type $TYPES_ARR[$pnum] which is not supported yet. Exiting\n";
-	    exit -1;
-	}
 	else {
-	    print "ERROR: parameter " . $e->{name} . " has unsupported type $TYPES_ARR[$pnum]. Exiting\n";
-	    exit -1;
+	    error_exit_with_cleanup("Parameter " . $e->{name} . " has an unsupported type $TYPES_ARR[$pnum]");
 	}
-    } # for pnum 
+    } # foreach $e (@{$data->{property}}) {
     
-    # create the $HADOOP_JAR_COMMAND_SCRIPT
+    # Create the $HADOOP_JAR_COMMAND_SCRIPT
     
     # command to run the jar. Note: this command did not work when the -conf option
     #    was put after the input params and the output path 
@@ -314,33 +322,42 @@ for ($i = 0; $i < $total_expts; $i++) {
     $hadoop_get_job_history_command = '${HADOOP_HOME}' . "/bin/hadoop fs -copyToLocal $hdfs_output_path/_logs/history $EXPERIMENT_HISTORY_DIR";
     # command to get the job history summary for the experiment
     $hadoop_job_history_summary_command = '${HADOOP_HOME}' . "/bin/hadoop job -history all $hdfs_output_path >$EXPERIMENT_HISTORY_DIR/READABLE_SUMMARY.txt";
-
+    
     `echo '#!/usr/bin/env bash' >$HADOOP_JAR_COMMAND_SCRIPT`;
     `echo >>$HADOOP_JAR_COMMAND_SCRIPT`;
-    `echo 'printf "Going to run the command: %s\\n" "$hadoop_delete_hdfs_output_command"' >>$HADOOP_JAR_COMMAND_SCRIPT`;
-    `echo '$hadoop_delete_hdfs_output_command' >>$HADOOP_JAR_COMMAND_SCRIPT`;
-    `echo 'printf "Finished running the command: %s\\n" "$hadoop_delete_hdfs_output_command"' >>$HADOOP_JAR_COMMAND_SCRIPT`;
+    
+    #`echo 'printf "Going to run the command: %s\\n" "$hadoop_delete_hdfs_output_command"' >>$HADOOP_JAR_COMMAND_SCRIPT`;
+    `echo '$hadoop_delete_hdfs_output_command >&/dev/null' >>$HADOOP_JAR_COMMAND_SCRIPT`;
+    #`echo 'printf "Finished running the command: %s\\n" "$hadoop_delete_hdfs_output_command"' >>$HADOOP_JAR_COMMAND_SCRIPT`;
     `echo >>$HADOOP_JAR_COMMAND_SCRIPT`;
-    `echo 'printf "Going to run the command: %s\\n" "$hadoop_run_jar_command"' >>$HADOOP_JAR_COMMAND_SCRIPT`;
+    
+    #`echo 'printf "Going to run the command: %s\\n" "$hadoop_run_jar_command"' >>$HADOOP_JAR_COMMAND_SCRIPT`;
     `echo '$hadoop_run_jar_command' >>$HADOOP_JAR_COMMAND_SCRIPT`;
     `echo 'wait \$!' >>$HADOOP_JAR_COMMAND_SCRIPT`; 
-    `echo 'printf "Finished running the command: %s\\n" "$hadoop_run_jar_command"' >>$HADOOP_JAR_COMMAND_SCRIPT`;
+    #`echo 'printf "Finished running the command: %s\\n" "$hadoop_run_jar_command"' >>$HADOOP_JAR_COMMAND_SCRIPT`;
     `echo >>$HADOOP_JAR_COMMAND_SCRIPT`;
-
-    `echo 'printf "Going to run the command: %s\\n" "$hadoop_get_job_history_command"' >>$HADOOP_JAR_COMMAND_SCRIPT`;
+    
+    #`echo 'printf "Going to run the command: %s\\n" "$hadoop_get_job_history_command"' >>$HADOOP_JAR_COMMAND_SCRIPT`;
     `echo '$hadoop_get_job_history_command' >>$HADOOP_JAR_COMMAND_SCRIPT`;
-    `echo 'printf "Finished running the command: %s\\n" "$hadoop_get_job_history_command"' >>$HADOOP_JAR_COMMAND_SCRIPT`;
+    #`echo 'printf "Finished running the command: %s\\n" "$hadoop_get_job_history_command"' >>$HADOOP_JAR_COMMAND_SCRIPT`;
     `echo >>$HADOOP_JAR_COMMAND_SCRIPT`;
-
-    `echo 'printf "Going to run the command: %s\\n" "$hadoop_job_history_summary_command"' >>$HADOOP_JAR_COMMAND_SCRIPT`;
+    
+    #`echo 'printf "Going to run the command: %s\\n" "$hadoop_job_history_summary_command"' >>$HADOOP_JAR_COMMAND_SCRIPT`;
     `echo '$hadoop_job_history_summary_command' >>$HADOOP_JAR_COMMAND_SCRIPT`;
-    `echo 'printf "Finished running the command: %s\\n" "$hadoop_job_history_summary_command"' >>$HADOOP_JAR_COMMAND_SCRIPT`;
+    #`echo 'printf "Finished running the command: %s\\n" "$hadoop_job_history_summary_command"' >>$HADOOP_JAR_COMMAND_SCRIPT`;
     `echo >>$HADOOP_JAR_COMMAND_SCRIPT`;
 
+#
+# NOTE: files created by JVM profiling have the format: attempt_201007182349_0008_m_000000_0.profile
+#
+    `echo 'mkdir -p profiles' >>$HADOOP_JAR_COMMAND_SCRIPT`;
+    `echo 'mv attempt_*.profile profiles >&/dev/null' >>$HADOOP_JAR_COMMAND_SCRIPT`;
+    `echo >>$HADOOP_JAR_COMMAND_SCRIPT`;
+    
     if ($delete_hdfs_output_on_exit == 1) {
-	`echo 'printf "Going to run the command: %s\\n" "$hadoop_delete_hdfs_output_command"' >>$HADOOP_JAR_COMMAND_SCRIPT`;
-	`echo '$hadoop_delete_hdfs_output_command' >>$HADOOP_JAR_COMMAND_SCRIPT`;
-	`echo 'printf "Finished running the command: %s\\n" "$hadoop_delete_hdfs_output_command"' >>$HADOOP_JAR_COMMAND_SCRIPT`;
+	#`echo 'printf "Going to run the command: %s\\n" "$hadoop_delete_hdfs_output_command"' >>$HADOOP_JAR_COMMAND_SCRIPT`;
+	`echo '$hadoop_delete_hdfs_output_command >&/dev/null' >>$HADOOP_JAR_COMMAND_SCRIPT`;
+	#`echo 'printf "Finished running the command: %s\\n" "$hadoop_delete_hdfs_output_command"' >>$HADOOP_JAR_COMMAND_SCRIPT`;
         `echo >>$HADOOP_JAR_COMMAND_SCRIPT`;
     }
     `chmod 544 $HADOOP_JAR_COMMAND_SCRIPT`; 
@@ -361,22 +378,27 @@ chdir $CURR_DIR;
 
 # finally: write the file that contains the list of output directories
 
-my @nums = gen_random_permutation($total_expts);
-
+my @nums = ();
+if ($SHOULD_RANDOMIZE eq "true") {
+    @nums = gen_random_permutation($total_expts);
 # the random permutation is in the 1..num_expts range -- adjust it to 0..(num_expts-1)
-for ($i = 0; $i < $total_expts; $i++) {
-    $nums[$i] = $nums[$i] - 1;
-    unless ($nums[$i] >= 0 && $nums[$i] < $total_expts) {
-        print "ERROR: Invalid experiment ID: $nums[$i]. BUG in the randomization of experiments. Exiting\n";
-        exit -1;
+    for ($i = 0; $i < $total_expts; $i++) {
+	$nums[$i] = $nums[$i] - 1;
+	unless ($nums[$i] >= 0 && $nums[$i] < $total_expts) {
+	    error_exit_with_cleanup("Invalid experiment ID: $nums[$i]. BUG in the randomization of experiments");
+	}
     }
 }
-#print "\nRandomized experiment list:\n";
-#print "@nums \n";
+else {
+    # use the order 0,..,$total_expts-1
+    for ($i = 0; $i < $total_expts; $i++) {
+	$nums[$i] = $i;
+    }
+}
 
-# Create the table of contents file that listing the experiments that will be done
+# Create the table of contents file that lists the experiments that will be done
 chdir $EXP_BASE_DIR;
-open (OUT, ">$EXPERIMENT_DESIGN_FILE") || quit ("FATAL ERROR: Could not open \"$EXPERIMENT_DESIGN_FILE\"");
+open (OUT, ">$EXPERIMENT_DESIGN_FILE") || error_exit_with_cleanup ("Could not open $EXPERIMENT_DESIGN_FILE");
 # print the schema: EXPT_ID followed by one column per parameter 
 print OUT "EXPT_ID"; 
 for ($i = 0; $i < $num_params; $i++) {
@@ -396,34 +418,23 @@ close OUT;
 print "\n***************Experiment Design***************\n";
 print `cat $EXPERIMENT_DESIGN_FILE`;
 
-# come back to the current working directory 
-chdir $CURR_DIR;
-
 # Create the file that lists the randomized list of experiment directories 
-open (OUT, ">$ARGV[2]") || quit ("FATAL ERROR: Could not open \"$ARGV[2]\"");
-
-my $full_path_to_expt_dir = "";
+open (OUT, ">$RANDOMIZED_EXPERIMENT_LIST_FILE") || error_exit_with_cleanup ("Could not open $RANDOMIZED_EXPERIMENT_LIST_FILE");
 
 for ($i = 0; $i < $total_expts; $i++) {
-    $dir_name = $EXP_BASE_DIR . "/EXPT$nums[$i]";
-
-    chdir $dir_name;
-    $full_path_to_expt_dir=`pwd`;
-    chomp($full_path_to_expt_dir);
-    print OUT "$full_path_to_expt_dir\n";
-
-    chdir $CURR_DIR;
+    print OUT "EXPT$nums[$i]\n";
 }
 
 close OUT;
 
 print "\n***************Randomized Order for Experiments***************\n";
-print `cat $ARGV[2]` . "\n";
+print `cat $RANDOMIZED_EXPERIMENT_LIST_FILE` . "\n";
 
-# for reference purposes, copy the input configuration file and randomized experiment 
-#  listing file to the experiment base directory 
+# come back to the current working directory 
+chdir $CURR_DIR;
+
+# for reference purposes, copy the input configuration file to the experiment base directory 
 `cp $ARGV[0] $EXP_BASE_DIR/$COPY_OF_INPUT_XML_CONFIGURATION_FILE`;
-`cp $ARGV[2] $EXP_BASE_DIR/$RANDOMIZED_EXPERIMENT_LIST_FILE`;
 
 exit 0;
 
@@ -456,8 +467,20 @@ sub gen_random_permutation {
     return @nums;
 }
 
+#####################################################################################
 
+# function invoked if the program exits with an error after creating the 
+#  base directory for experiments 
+sub error_exit_with_cleanup {
+    my ($msg) = @_;
+    print "ERROR: $msg\n";
+    print "Program failed because of a fatal error\n";
+    chdir $CURR_DIR; 
+    `rm -rf $EXP_BASE_DIR`;
+    exit -1;
+}
 
+#####################################################################################
 
 #end-of-file
 
