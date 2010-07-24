@@ -1,0 +1,45 @@
+Description / Purpose
+---------------------
+The scripts in these directories can be used to perform various operations
+in a hadoop cluster.
+
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+Script: copy_files_to_slaves
+----------------------------
+This script can be used to copy files to all the slaves.
+
+Usage:
+ perl copy_files_to_slaves.pl slaves_file local_file slave_dir
+  
+ where:
+   slaves_file = File containing a list of slave machines
+   local_file  = File or directory to copy to the slave machines
+   slave_dir   = Directory to copy the files to in the host machines
+
+Assumptions/Requirements:
+ The slaves directory exists in the slave nodes
+
+Example:
+ perl copy_files_to_slaves.pl /root/SLAVE_NAMES.txt file.txt /root/target
+
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+Script: run_cmd_on_slaves.pl
+----------------------------
+This script can be used to execute the same command to all the slaves.
+
+Usage:
+ perl run_cmd_on_slaves.pl slaves_file wait ('cmd'|"cmd")
+  
+ where:
+   slaves_file = File containing a list of slave machines
+   wait        = true or false, whether to wait for each cmd to finish or not
+   cmd         = The cmd to execute (surrounded by single or double quotes)
+
+Assumptions/Requirements:
+ The enviromental variable $HADOOP_HOME is defined in the master node
+
+Example:
+ perl run_cmd_on_slaves.pl /root/SLAVE_NAMES.txt "ls -l /root"
+
