@@ -15,14 +15,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Import local settings if they exists
-bin=`dirname "$0"`
-bin=`cd "$bin"; pwd`
-if [[ -f local_ec2_settings.sh ]] 
-then
-  . "$bin"/local_ec2_settings.sh 
-fi
-
 # Your Amazon Account Number.
 AWS_ACCOUNT_ID=${AWS_USER_ID}
 
@@ -70,6 +62,15 @@ INSTANCE_TYPE="m1.small"
 #      selected based on HADOOP_VERSION
 #HADOOP_VERSION=0.19.0
 HADOOP_VERSION=0.20.2
+
+
+# Import local settings if they exists and OVEWRITE the defaults
+bin=`dirname "$0"`
+bin=`cd "$bin"; pwd`
+if [[ -f "$bin"/local_ec2_settings.sh ]] 
+then
+  . "$bin"/local_ec2_settings.sh 
+fi
 
 ###################################################################################
 ###################################################################################

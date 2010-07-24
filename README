@@ -81,43 +81,17 @@ makes two assumptions
     your AWS private key (i.e., the ${EC2_PRIVATE_KEY} above)
 ****************** Caveat 1 as noted later *********************
 
-Of course, you can edit the Hadoop EC2 configuration in ${HADOOP_EC2_HOME}/hadoop-ec2-env.sh 
-if you follow a different convention. Ned, for example, follows a different convention
-as noted in ${HADOOP_EC2_HOME}/hadoop-ec2-env.sh 
+If you want to follow a Ned's convention (as noted in 
+${HADOOP_EC2_HOME}/hadoop-ec2-env.sh), you can create the file
+${HADOOP_EC2_HOME}/local_ec2_settings.sh and add the two lines:
 
---------------------------------------------------------------
-----------------------------------------------------------------------------
-	
-Edit all relevant variables in ${HADOOP_EC2_HOME}/hadoop-ec2-env.sh as listed below
-(see http://wiki.apache.org/hadoop/AmazonEC2 for further help)
+KEY_NAME="${EC2_KEYPAIR_NAME}"
+PRIVATE_KEY_PATH=`echo "$EC2_KEYDIR"/"$KEY_NAME"`
 
-# Your Amazon Account Number. Same as ${AWS_USER_ID}
-AWS_ACCOUNT_ID=${AWS_USER_ID}
-
-# Your Amazon AWS access key. Can define it here or 
-# can comment this since it will already be defined by you above
-#AWS_ACCESS_KEY_ID=
-
-# Your Amazon AWS secret access key. Can define it here or 
-# can comment this since it will already be defined by you above
-#AWS_SECRET_ACCESS_KEY=
-
-# Location of EC2 keys. Note that $EC2_PRIVATE_KEY is a variable
-#   that you have defined above. I put the keys in ${HOME}/.ec2
-#    so that is what my EC2_KEYDIR will translate to
-EC2_KEYDIR=`dirname "$EC2_PRIVATE_KEY"`
-
-# The EC2 key name used to launch instances.
-# This will be a key pair that you create and store the private key for.
-#  For example: KEY_NAME=my-keypair
-KEY_NAME=[FILL IN with the name of the keypair you created]
-
-# Where your EC2 private key is stored. Should be fine as is
-#  if you paid attention to Caveat 1 above.
-PRIVATE_KEY_PATH=`echo "$EC2_KEYDIR"/"id_rsa-$KEY_NAME"`	
-
-# The version of Hadoop to use. For example:
-HADOOP_VERSION=0.20.2
+You may add other settings in ${HADOOP_EC2_HOME}/local_ec2_settings.sh
+to overwrite the defaults one (e.g. INSTANCE_TYPE, HADOOP_VERSION).
+See ${HADOOP_EC2_HOME}/hadoop-ec2-env.sh for a complete listing
+of possible local settings.
 
 --------------------------------------------------------------
 ----------------------------------------------------------------------------
@@ -192,25 +166,6 @@ ${HADOOP_HOME}/bin/hadoop dfsadmin -report
 #  We have to copy files from the local machine to the Hadoop Master first
 logout 
 
---------------------------------------------------------------------------------- 
----------------------------------------------------------------------------------
-
-NOTE: these commands have to be run from the local machine
-
-Copying our files to the Hadoop Master
---------------------------------------
-
-Before we can start using the Hadoop cluster, we need to copy our local files 
-to the cluster 
-
-#Create a tarball (tar and gzip) of the AWS_HADOOP_HARNESS files
-
-cd ${AWS_HADOOP_HARNESS_HOME}/..
-
-tar -zcvf AWS_HADOOP_HARNESS.tar.gz aws_hadoop_harness
-
-# Copy the tarball from the local machine to the Hadoop Master Node
-${HADOOP_EC2_HOME}/hadoop-ec2 push test-hadoop-cluster ${AWS_HADOOP_HARNESS_HOME}/../AWS_HADOOP_HARNESS.tar.gz
 
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
@@ -243,101 +198,6 @@ ${HADOOP_HOME}/bin/hadoop jar ${HADOOP_HOME}/hadoop-*-examples.jar teragen -Dmap
 # Confirm that the sort output has been created --- there will be one file per map task
 ${HADOOP_HOME}/bin/hadoop fs -lsr /user/shivnath/tera/in
 
----------------------------------------------------------------------------------
----------------------------------------------------------------------------------
-
-Running the Experiments in the EC2 Hadoop Master Node
------------------------------------------------------
-
-# Note: these commands have to be run on the Hadoop Master node
-
-tar -zxvf AWS_HADOOP_HARNESS.tar.gz
-
-cd aws_hadoop_harness
-
-# Set the desired parameters in config.1.xml---see the example config*.xml files for 
-#  the specification format. 
-
-# use less to view files on the Hadoop Master
-less config.1.xml
-
-# use the nano or vi editors to edit files on the Hadoop Master
-#  I use nano since its commands are similar to the pico editor that comes with 
-#    the pine email service. You can always use the yum package manager to 
-#    install other editors
-# For nano commands, see: http://mintaka.sdsu.edu/reu/nano.html
-nano config.1.xml
-
-# Run the perl program to generate the input directory for each experiment: 
-Usage: perl gen_exper.pl <XML config file for experiments> <base directory for experiments>
-Example: perl gen_exper.pl config.1.xml TEMP
-
-##########################################################
-# The above perl command will fails if you do not 
-#   have the XML::Simple perl module installed. Manual
-#   installation instructions for XML::Simple are given at the end 
-#   of this document
-##########################################################
-
-# The "perl gen_exper.pl ..." command will create one subdirectory 
-#   under <base directory>. The experiments are run in a random order 
-#   to avoid side-effects. The order in which the experiments will 
-#   be run is the order in the file 
-#   <base directory for experiments>/RANDOMIZED_EXPERIMENT_LIST.txt
-cat TEMP/RANDOMIZED_EXPERIMENT_LIST.txt
-
-# Also: you can see the experiment matrix in the file:
-#    <base directory for experiments>/DESIGN.txt
-cat TEMP/DESIGN.txt
-
-# Run the run_exper.sh bash script to run the experiments in the matrix
-#  in the randomized order 
-Usage: ./run_exper.sh <base directory for experiments>
-Example: ./run_exper.sh TEMP
-
-# Alternate use: the combination of nohup and a final "&" will ensure
-#   that the process will continue to run even if you logout from the Master node
-Usage: nohup ./run_exper.sh <base directory for experiments> >&OUT.txt &
-Example: nohup ./run_exper.sh TEMP >&OUT.txt &
-
-# you can monitor the job execution in the JobTracker accessible at:
-http://<replace with public domain name of Hadoop Master>:50030
-
-# Note: you can find the public domain name of the Hadoop master
-#   using the AWS management console or by running the following 
-#   command on the local machine and looking for the instance listed under 
-#   test-hadoop-cluster-master
-${EC2_HOME}/bin/ec2-describe-instances 
-
-# Once run_exper.sh completes: 
-#-----------------------------
-#
-#  -- The file <base directory for experiments>/HADOOP_JOB_IDS.txt will contain
-#     the Hadoop JobID for the MapReduce job submitted for each experiment
-#     (the JobID will be Null if the job was not submitted due to some error)
-#
-#  -- Each experiment directory will contain:
-#----------------------------------------------
-#
-#     -- the output.txt file: the output progress information produced by the job  
-#
-#     -- the history directory -- all history files and summary for the job  
-#
-#     -- the profiles directory -- JVM-level profiling info for the job (if collected
-#             explicitly by setting the mapred.task.profile parameter to true)
-
-# Use the get_exper_logs.sh script to copy the task attempt log generated by Hadoop
-#  for each task attempt as part of each experiment. The task logs from each 
-#  Hadoop slave (TaskTracker) node are tar gzipped into a single file, and then 
-#  copied to the userlogs subdirectory in the directory for each experiment
-Usage: ./get_exper_logs.sh <base directory for experiments> <list of Hadoop slave nodes>
-Example: ./get_exper_logs.sh TEMP /root/SLAVE_NAMES.txt
-
-# Running "tar -zxvf <filename>" will produce the actual task attempt dirs/files
-#  for each tar gzipped file
-
-# To run another set of experiments, repeat the above steps starting from the  
-#   "perl gen_exper.pl ..." step, for example, with another XML configuration file
 
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
@@ -358,25 +218,3 @@ ${HADOOP_EC2_HOME}/hadoop-ec2 terminate-cluster test-hadoop-cluster
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 
-##########################################################
-What to do if the "perl gen_exper.pl" command fails because 
-  the XML::Simple perl module is not installed:
-Answer: Install XML::Simple manually by running the following commands 
-        on the Master node
-
-# use yum to install perl-CPAN
-yum install -y perl-CPAN
-
-# open a CPAN shell so that we can install the XML::Simple module
-perl -MCPAN -e shell
-  --> answer no (to avoid manual configuration)
-
-# Enter the following commands in the CPAN shell.
-# Note the "o" in the commands below 
-
-cpan>o conf prerequisites_policy follow
-cpan>o conf commit
-cpan>install XML::Simple
-cpan>exit
-
-##########################################################
