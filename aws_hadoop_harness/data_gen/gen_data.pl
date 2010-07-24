@@ -151,6 +151,7 @@ print OUTFILE qq($hadoop_home/bin/hadoop fs -put data/part.tbl*     $HDFS_DIR/pa
 print OUTFILE qq($hadoop_home/bin/hadoop fs -put data/supplier.tbl* $HDFS_DIR/supplier\n);
 print OUTFILE qq($hadoop_home/bin/hadoop fs -put data/nation.tbl*   $HDFS_DIR/nation\n);
 print OUTFILE qq($hadoop_home/bin/hadoop fs -put data/region.tbl*   $HDFS_DIR/region\n);
+print OUTFILE qq(rm -rf data/*.tbl*\n);
 close OUTFILE;
 chmod 0744, "gen_and_load.sh";
 
@@ -190,6 +191,7 @@ for ($host = 0; $host < $num_hosts; $host++)
    {
       system qq(ssh $ssh_opts $hosts[$host] ).
              qq(\"cd $LOCAL_DIR; ./gen_and_load.sh >& gen_and_load.out\");
+      println qq(Data generation completed at host: $hosts[$host]\n);
       exit(0);
    }
 
@@ -203,7 +205,6 @@ println qq(Waiting for the data generation to complete);
 for ($host = 0; $host < $num_hosts; $host++)
 {
    wait;
-   print "..";
 }
 
 # Clean up
