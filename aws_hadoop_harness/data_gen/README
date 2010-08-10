@@ -66,4 +66,7 @@ be split into 10 files each (except nation and region). Suppose the cluster
 consisted of 5 slave nodes. Then, each slave would generate 10/5=2 files
 for each table, or equivalently 20/5=4GB of data totally.
 
+---------------------------------------------------------------------------
+# To simply generate some random text (2*numNodes*500MB)
+hadoop jar hadoop-0.20.2-examples.jar randomtextwriter -Dtest.randomtextwrite.bytes_per_map=524288000 -Dtest.randomtextwrite.maps_per_host=2 wordcount/in
 

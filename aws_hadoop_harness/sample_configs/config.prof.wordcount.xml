@@ -1,0 +1,102 @@
+<?xml version='1.0'?>
+<configuration>
+    <property>
+        <type>HADOOP_JAR</type>
+        <name>jar_path</name>
+        <numvalues>1</numvalues>
+        <values>/usr/local/hadoop-0.20.2/hadoop-0.20.2-examples.jar</values>
+    </property>
+    <property>
+        <type>HADOOP_JAR</type>
+        <name>jar_class_name</name>
+        <numvalues>1</numvalues>
+        <values>wordcount</values>
+    </property>
+    <property>
+        <type>HADOOP_JAR</type>
+        <name>jar_input_params</name>
+        <numvalues>1</numvalues>
+        <values>/user/root/wordcount/in</values>
+    </property>
+    <property>
+        <type>HADOOP_JAR</type>
+        <name>jar_output_prefix</name>
+        <numvalues>1</numvalues>
+        <values>/user/root/wordcount/out</values>
+        <delete_on_exit>true</delete_on_exit>
+    </property>
+
+
+    <property>
+        <name>mapred.reduce.tasks</name>
+        <numvalues>1</numvalues>
+        <values>5</values>
+    </property>
+    <property>
+        <name>mapred.child.java.opts</name>
+        <numvalues>1</numvalues>
+        <values>-Xmx300m</values>
+    </property>
+    <property>
+        <name>io.sort.mb</name>
+        <numvalues>1</numvalues>
+        <values>200</values>
+    </property>
+    
+    <property>
+        <name>btrace.profile.dir</name>
+        <numvalues>1</numvalues>
+        <values>/root/hadoop-btrace</values>
+    </property>
+
+    <property>
+        <name>mapred.task.profile</name>
+        <numvalues>2</numvalues>
+        <values>false,true</values>
+    </property>
+
+    <property>
+        <name>mapred.task.profile.maps</name>
+        <numvalues>1</numvalues>
+        <values>-</values>
+    </property>
+
+    <property>
+        <name>mapred.task.profile.reduces</name>
+        <numvalues>1</numvalues>
+        <values>-</values>
+    </property>
+
+    <property>
+        <name>mapred.task.profile.params</name>
+        <numvalues>1</numvalues>
+        <value_delimitter>|</value_delimitter>
+        <values>-javaagent:${btrace.profile.dir}/btrace-agent.jar=dumpClasses=false,debug=false,unsafe=true,probeDescPath=.,noServer=true,script=${btrace.profile.dir}/HadoopBTrace.class,scriptOutputFile=%s</values>
+    </property>
+
+    <property>
+        <name>mapred.job.reuse.jvm.num.tasks</name>
+        <numvalues>1</numvalues>
+        <values>1</values>
+    </property>
+
+    <property>
+        <name>min.num.spills.for.combine</name>
+        <numvalues>1</numvalues>
+        <values>9999</values>
+    </property>
+
+    <property>
+        <name>mapred.compress.map.output</name>
+        <numvalues>1</numvalues>
+        <values>true</values>
+    </property>
+
+    <property>
+        <name>mapred.output.compress</name>
+        <numvalues>1</numvalues>
+        <values>true</values>
+    </property>
+
+</configuration>
+
