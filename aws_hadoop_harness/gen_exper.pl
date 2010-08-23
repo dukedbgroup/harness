@@ -247,7 +247,7 @@ for ($i = 0; $i < $total_expts; $i++) {
     chdir $EXP_BASE_DIR;
     
     # create the directory for this experiment
-    $dir_name = "EXPT$i";
+    $dir_name = sprintf("EXPT-%04d", $i);
     
     if (-d $dir_name) {
 	# this shouldn't happen
@@ -294,8 +294,8 @@ for ($i = 0; $i < $total_expts; $i++) {
 		# where ${exptID} is an identifier for the experiment. For example, 
 		# if we specified jar_output_prefix as /user/shivnath/tera/out,
 		# then the output directory for the Experiment 1 will be
-		# /user/shivnath/tera/out/EXPT1
-		$hdfs_output_path = $ARR[$i][$pnum] . "/EXPT" . "$i";
+		# /user/shivnath/tera/out/EXPT0001
+		$hdfs_output_path = $ARR[$i][$pnum] . "/$dir_name";
 		
 		# should the hdfs output be deleted when the experiment completes
 		if (defined($e->{delete_on_exit}) && ($e->{delete_on_exit} eq "false")) {
@@ -407,7 +407,7 @@ for ($i = 0; $i < $num_params; $i++) {
 print OUT "\n";
 # print the list of experiments 
 for ($i = 0; $i < $total_expts; $i++) {
-    print OUT "EXPT$i";
+    print OUT sprintf("EXPT-%04d", $i);
     for ($j = 0; $j < $num_params; $j++) {
 	print OUT "\t$ARR[$i][$j]";
     }      
@@ -422,7 +422,7 @@ print `cat $EXPERIMENT_DESIGN_FILE`;
 open (OUT, ">$RANDOMIZED_EXPERIMENT_LIST_FILE") || error_exit_with_cleanup ("Could not open $RANDOMIZED_EXPERIMENT_LIST_FILE");
 
 for ($i = 0; $i < $total_expts; $i++) {
-    print OUT "EXPT$nums[$i]\n";
+    print OUT sprintf("EXPT-%04d\n", $nums[$i]);
 }
 
 close OUT;

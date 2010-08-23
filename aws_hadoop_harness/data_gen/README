@@ -67,6 +67,14 @@ consisted of 5 slave nodes. Then, each slave would generate 10/5=2 files
 for each table, or equivalently 20/5=4GB of data totally.
 
 ---------------------------------------------------------------------------
-# To simply generate some random text (2*numNodes*500MB)
-hadoop jar hadoop-0.20.2-examples.jar randomtextwriter -Dtest.randomtextwrite.bytes_per_map=524288000 -Dtest.randomtextwrite.maps_per_host=2 wordcount/in
+---------------------------------------------------------------------------
+# To generate some random text (50 GB)for Terasort 
+#(500000000 * 100 bytes_per_rec = 50GB using 100 map tasks)
+${HADOOP_HOME}/bin/hadoop jar hadoop-0.20.2-examples.jar teragen -Dmapred.map.tasks=100 500000000 tera/in
+
+
+# To simply generate some random text 
+# (500MB per_map * 2 maps_per_host * numNodes = numNodes GB)
+${HADOOP_HOME}/bin/hadoop jar hadoop-0.20.2-examples.jar randomtextwriter -Dtest.randomtextwrite.bytes_per_map=524288000 -Dtest.randomtextwrite.maps_per_host=2 -Dtest.randomtextwrite.min_words_value=5 -Dtest.randomtextwrite.max_words_value=10 wordcount/in
+
 
