@@ -15,7 +15,7 @@
 #  The enviromental variable $HADOOP_HOME is defined in the master node
 #
 # Example:
-#  perl run_cmd_on_slaves.pl /root/SLAVE_NAMES.txt "ls -l /root"
+#  perl run_cmd_on_slaves.pl /root/SLAVE_NAMES.txt true "ls -l /root"
 #
 # Author: Herodotos Herodotou
 # Date: July 23, 2010
@@ -31,7 +31,7 @@ sub println {
 # Make sure we have all the arguments
 if ($#ARGV != 2)
 {
-   println qq(Usage: perl $0 slaves_file local_file slave_dir);
+   println qq(Usage: perl $0 slaves_file wait ('cmd'|"cmd"));
    println qq(  slaves_file = File containing a list of slave machines);
    println qq(  wait = true or false, whether to wait for each cmd to finish or not);
    println qq(  cmd  = The cmd to execute \(surrounded by single or double quotes\));
