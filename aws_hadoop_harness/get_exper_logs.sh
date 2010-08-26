@@ -73,6 +73,8 @@ fi
 
 declare CURR_DIR=`pwd`
 declare direc
+declare -a hadoop_job_ids_array
+declare hadoop_job_ids_str
 declare hadoop_job_id
 declare userlog_dirs
 declare tar_gzipped_file
@@ -95,51 +97,61 @@ while read direc <&3 ; do
     fi
     
     # get the Hadoop Job ID
-#grep "Running" output.txt  ---> returns the line of the form
-#10/01/26 08:11:26 INFO mapred.JobClient: Running job: job_201001231500_0039
+    # grep "Running" output.txt  ---> returns lines of the form
+    # 10/01/26 08:11:26 INFO mapred.JobClient: Running job: job_201001231500_0039
+    # In the case of multiple lines, the hadoop_job_ids_str will contain all
+    # job id separated by \n
  
-    hadoop_job_id=`grep "Running" $HADOOP_JAR_COMMAND_OUTPUT_FILE | sed 's/.*\(job[0-9_]\+\)$/\1/'`
-    # if this is a valid job id, then we can go to the slaves 
-    if [ "${hadoop_job_id:0:4}" != "job_" ]; then
-    printf "Invalid Hadoop Job ID \"%s\" in the experiment directory %s\n" "$hadoop_job_id" "$direc"
-    printf "Skipping this experiment\n"
-    continue
-    fi
+    hadoop_job_ids_str=`grep "Running" $HADOOP_JAR_COMMAND_OUTPUT_FILE | sed 's/.*\(job[0-9_]\+\)$/\1/'`
     
-# The directories corresponding to the map task attempts have the format
-#    attempt_201001052153_0021_m_000004_0
-#    attempt_201001052153_0021_m_000004_1
-# The directories corresponding to the reduce task attempts have the format
-#    attempt_201001052153_0021_r_000004_0
-#    attempt_201001052153_0021_r_000004_1
-    
-    # Note: ${hadoop_job_id/job_/} replaces the first occurence of "job_" in
-    #   ${hadoop_job_id} with ""
-    attempt_dirname_pattern="attempt_${hadoop_job_id/job_/}"
+    # split hadoop_job_ids_str using tr
+    hadoop_job_ids_array=(`echo $hadoop_job_ids_str | tr '\n' ' '`)
 
-   rm -rf userlogs
-   mkdir -p userlogs
-    
-#  For each slave host
-    for slave in `cat "$HOSTLIST"`; do
-    {
-        userlog_dirs="$( ssh $HADOOP_SSH_OPTS $slave "ls -1t ${MR_USERLOG_DIR} | grep \"${attempt_dirname_pattern}\"" )"
-        tar_gzipped_file="/tmp/tasklogs_${hadoop_job_id}_${slave}.tar.gz"  
-        ssh $HADOOP_SSH_OPTS $slave "cd ${MR_USERLOG_DIR}; tar -zcf ${tar_gzipped_file} $( echo ${userlog_dirs} )"
-        scp $HADOOP_SSH_OPTS $slave:${tar_gzipped_file} "userlogs/"
-        ssh $HADOOP_SSH_OPTS $slave "rm -f $tar_gzipped_file"
-        
-        if [ "$COMPRESS" != "compress" ]; then
-            tar xvfz userlogs/tasklogs_${hadoop_job_id}_${slave}.tar.gz -C userlogs > /dev/null
-            rm -f userlogs/tasklogs_${hadoop_job_id}_${slave}.tar.gz
-        fi
+    #iterate over the hadoop job ids
+    for hadoop_job_id in ${hadoop_job_ids_array[@]}; do
 
-        if [ "$HADOOP_SLAVE_SLEEP" != "" ]; then
-            sleep $HADOOP_SLAVE_SLEEP
-        fi
-    } &
+		# if this is a valid job id, then we can go to the slaves
+		if [ "${hadoop_job_id:0:4}" != "job_" ]; then
+		printf "Invalid Hadoop Job ID \"%s\" in the experiment directory %s\n" "$hadoop_job_id" "$direc"
+		printf "Skipping this experiment\n"
+		continue
+		fi
+		
+		# The directories corresponding to the map task attempts have the format
+		#    attempt_201001052153_0021_m_000004_0
+		#    attempt_201001052153_0021_m_000004_1
+		# The directories corresponding to the reduce task attempts have the format
+		#    attempt_201001052153_0021_r_000004_0
+		#    attempt_201001052153_0021_r_000004_1
+		
+		# Note: ${hadoop_job_id/job_/} replaces the first occurence of "job_" in
+		#   ${hadoop_job_id} with ""
+		attempt_dirname_pattern="attempt_${hadoop_job_id/job_/}"
+
+		rm -rf userlogs
+		mkdir -p userlogs
+		
+		#  For each slave host
+		for slave in `cat "$HOSTLIST"`; do
+		{
+		    userlog_dirs="$( ssh $HADOOP_SSH_OPTS $slave "ls -1t ${MR_USERLOG_DIR} | grep \"${attempt_dirname_pattern}\"" )"
+		    tar_gzipped_file="/tmp/tasklogs_${hadoop_job_id}_${slave}.tar.gz"
+		    ssh $HADOOP_SSH_OPTS $slave "cd ${MR_USERLOG_DIR}; tar -zcf ${tar_gzipped_file} $( echo ${userlog_dirs} )"
+		    scp $HADOOP_SSH_OPTS $slave:${tar_gzipped_file} "userlogs/"
+		    ssh $HADOOP_SSH_OPTS $slave "rm -f $tar_gzipped_file"
+		    
+		    if [ "$COMPRESS" != "compress" ]; then
+		        tar xvfz userlogs/tasklogs_${hadoop_job_id}_${slave}.tar.gz -C userlogs > /dev/null
+		        rm -f userlogs/tasklogs_${hadoop_job_id}_${slave}.tar.gz
+		    fi
+
+		    if [ "$HADOOP_SLAVE_SLEEP" != "" ]; then
+		        sleep $HADOOP_SLAVE_SLEEP
+		    fi
+		} &
+		done
+		wait
     done
-    wait
     
     #printf "Exiting experiment input directory %s\n" "$direc"
     
