@@ -33,8 +33,9 @@ declare MR_USERLOG_DIR="${HADOOP_LOG_DIR}/userlogs"
 ##########################################################################
 
 # Check Usage
-if [ $# -ne 2 ]; then
-    printf "Usage: $0 <base directory for experiments> <file listing Hadoop slaves>\n"
+if [ $# -ne 2 ] && [ $# -ne 3 ]; then
+    printf "Usage: $0 <base directory for experiments> <file listing Hadoop slaves> [compress]\n"
+    printf "Specify 'compress' if you want the logs to be compressed in the userlogs directory\n";
     exit -1
 fi
 
@@ -51,6 +52,12 @@ declare HOSTLIST=$2
 if test ! -e $HOSTLIST; then
     printf "ERROR: Invalid file listing the Hadoop slave nodes. Exiting\n"
     exit -1
+fi
+
+declare COMPRESS=$3
+if [ $# -eq 3 ] && [ "$COMPRESS" != "compress" ]; then
+   printf "ERROR: The only valid value for the 3rd argument is 'compress'. Exiting\n"
+   exit -1
 fi
 
 # go to the experiment base directory 
@@ -82,9 +89,9 @@ while read direc <&3 ; do
     cd $direc
     
     if test ! -e $HADOOP_JAR_COMMAND_OUTPUT_FILE; then
-	printf "Output file %s does not exist in the experiment directory %s\n" "$HADOOP_JAR_COMMAND_OUTPUT_FILE" "$direc"
-	printf "Skipping this experiment\n"
-	continue
+    printf "Output file %s does not exist in the experiment directory %s\n" "$HADOOP_JAR_COMMAND_OUTPUT_FILE" "$direc"
+    printf "Skipping this experiment\n"
+    continue
     fi
     
     # get the Hadoop Job ID
@@ -94,9 +101,9 @@ while read direc <&3 ; do
     hadoop_job_id=`grep "Running" $HADOOP_JAR_COMMAND_OUTPUT_FILE | sed 's/.*\(job[0-9_]\+\)$/\1/'`
     # if this is a valid job id, then we can go to the slaves 
     if [ "${hadoop_job_id:0:4}" != "job_" ]; then
-	printf "Invalid Hadoop Job ID \"%s\" in the experiment directory %s\n" "$hadoop_job_id" "$direc"
-	printf "Skipping this experiment\n"
-	continue
+    printf "Invalid Hadoop Job ID \"%s\" in the experiment directory %s\n" "$hadoop_job_id" "$direc"
+    printf "Skipping this experiment\n"
+    continue
     fi
     
 # The directories corresponding to the map task attempts have the format
@@ -115,17 +122,22 @@ while read direc <&3 ; do
     
 #  For each slave host
     for slave in `cat "$HOSTLIST"`; do
-	{
-	    userlog_dirs="$( ssh $HADOOP_SSH_OPTS $slave "ls -1t ${MR_USERLOG_DIR} | grep \"${attempt_dirname_pattern}\"" )"
-            tar_gzipped_file="/tmp/tasklogs_${hadoop_job_id}_${slave}.tar.gz"  
-            ssh $HADOOP_SSH_OPTS $slave "cd ${MR_USERLOG_DIR}; tar -zcf ${tar_gzipped_file} $( echo ${userlog_dirs} )"
-            scp $HADOOP_SSH_OPTS $slave:${tar_gzipped_file} "userlogs/"
-            ssh $HADOOP_SSH_OPTS $slave "rm -f $tar_gzipped_file"
-	    
-	    if [ "$HADOOP_SLAVE_SLEEP" != "" ]; then
-		sleep $HADOOP_SLAVE_SLEEP
-	    fi
-	} &
+    {
+        userlog_dirs="$( ssh $HADOOP_SSH_OPTS $slave "ls -1t ${MR_USERLOG_DIR} | grep \"${attempt_dirname_pattern}\"" )"
+        tar_gzipped_file="/tmp/tasklogs_${hadoop_job_id}_${slave}.tar.gz"  
+        ssh $HADOOP_SSH_OPTS $slave "cd ${MR_USERLOG_DIR}; tar -zcf ${tar_gzipped_file} $( echo ${userlog_dirs} )"
+        scp $HADOOP_SSH_OPTS $slave:${tar_gzipped_file} "userlogs/"
+        ssh $HADOOP_SSH_OPTS $slave "rm -f $tar_gzipped_file"
+        
+        if [ "$COMPRESS" != "compress" ]; then
+            tar xvfz userlogs/tasklogs_${hadoop_job_id}_${slave}.tar.gz -C userlogs > /dev/null
+            rm -f userlogs/tasklogs_${hadoop_job_id}_${slave}.tar.gz
+        fi
+
+        if [ "$HADOOP_SLAVE_SLEEP" != "" ]; then
+            sleep $HADOOP_SLAVE_SLEEP
+        fi
+    } &
     done
     wait
     
