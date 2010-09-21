@@ -116,7 +116,21 @@ Example:
 # To run another set of experiments, repeat the above steps starting from the  
 #   "perl gen_exper.pl ..." step, for example, with another XML configuration file
 
+##########################################################
 
+Two new files have been added to the AWS Hadoop Harness:
+-------------------------------------------------------
+
+(1) clean_and_restart_cluster.sh  -- which gives the ability to delete current HDFS contents
+       and restart Hadoop and HDFS, possibly with a new Hadoop and HDFS configuration. This command 
+       is invoked with no parameters. See comments at the start of the file on how to provide a new
+       Hadoop and HDFS configuration. 
+
+(2) restart_cluster.sh -- which is the same as clean_and_restart_cluster.sh except that it does not
+      delete the current HDFS filesystem (useful in case we want to preserve the current data in HDFS). 
+      Bear in mind that properties of the current files will not change, e.g., they will have the 
+      same replication factor as before. If you want to change the replication factor, then the 
+      files have to be recreated (or use hadoop fs -setrep)
 
 ##########################################################
 What to do if the "perl gen_exper.pl" command fails because 
