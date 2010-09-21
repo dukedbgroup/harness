@@ -49,10 +49,10 @@ PRIVATE_KEY_PATH=`echo "${EC2_KEYDIR}"/"id_rsa-${KEY_NAME}"`
 
 # The EC2 instance type: m1.small, m1.large, m1.xlarge
 #  NOTE: we do not support AMIs for all types of instances
-INSTANCE_TYPE="m1.small"
+#INSTANCE_TYPE="m1.small"
 #INSTANCE_TYPE="m1.large"
 #INSTANCE_TYPE="m1.xlarge"
-#INSTANCE_TYPE="c1.medium"
+INSTANCE_TYPE="c1.medium"
 #INSTANCE_TYPE="c1.xlarge"
 
 # The version of Hadoop to use.

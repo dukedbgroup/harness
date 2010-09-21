@@ -61,6 +61,11 @@ cat > $HADOOP_HOME/conf/hdfs-site.xml <<EOF
   <value>134217728</value>
 </property>
 
+<property>
+  <name>dfs.replication</name>
+  <value>1</value>
+</property>
+
 </configuration>
 EOF
 
@@ -82,12 +87,12 @@ cat > $HADOOP_HOME/conf/mapred-site.xml <<EOF
 
 <property>
   <name>mapred.tasktracker.map.tasks.maximum</name>
-  <value>3</value>
+  <value>4</value>
 </property>
 
 <property>
   <name>mapred.tasktracker.reduce.tasks.maximum</name>
-  <value>3</value>
+  <value>2</value>
 </property>
 
 </configuration>
