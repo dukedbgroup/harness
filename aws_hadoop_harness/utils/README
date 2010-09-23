@@ -23,6 +23,7 @@ Assumptions/Requirements:
 Example:
  perl copy_files_to_slaves.pl /root/SLAVE_NAMES.txt file.txt /root/target
 
+
 -----------------------------------------------------------------------------
 -----------------------------------------------------------------------------
 Script: run_cmd_on_slaves.pl
@@ -42,4 +43,55 @@ Assumptions/Requirements:
 
 Example:
  perl run_cmd_on_slaves.pl /root/SLAVE_NAMES.txt "ls -l /root"
+
+
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+Script: run_cmd_on_slaves.pl
+----------------------------
+This script can be used to copy/move a set of logs from the experiment
+directories (EXPT-xxxx) to a single unified directory. For example,
+this script can copy all the history files from each experiment to
+a single history directory
+
+Usage:
+ perl unify_exper_logs.pl target exper_dir out_dir [move]
+ 
+ where:
+   target    = is one of history, profiles, or userlogs
+   exper_dir = Base directory for the harness experiments
+   out_dir   = The output directory
+   move      = Optional flag to move the files instead of copying
+
+Assumptions/Requirements:
+ The exper_dir is a valid directory with experiments and the file
+ RANDOMIZED_EXPERIMENT_LIST.txt exists.
+
+Example:
+ perl unify_exper_logs.pl history BASE OUT
+ Note: The OUT/history directory will be created and it will contain all
+       the files contained in the BASE/EXPT-****/history directories.
+
+
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+Script: merge_files.pl
+----------------------------
+This script can be used to merge files together horizontally, that is
+the rows from each input file are appended together (separated by a tab)
+to form the output file.
+
+Usage:
+ perl merge_files.pl output input_1 input_2 ... input_n
+ 
+ where:
+   output  = The output file (must not exist)
+   input_i = The input files to merge (must have same number of rows)
+
+Assumptions/Requirements:
+ The output file must not exist.
+ The input files must exist and have the same number of rows.
+
+Example:
+ perl merge_files.pl output input_1 input_2
 
