@@ -1,0 +1,54 @@
+
+Description:
+------------
+Scripts for collecting monitoring data (CPU, Memory, and IO utilizations)
+
+
+------------------------------------------------------------------------
+start_collector.sh
+------------------
+Start iostat and vmstat on all slave hosts.
+
+Usage: start_collector.sh slaves_file monitor_dir
+   slaves_file = file with slave nodes
+   monitor_dir = directory on slaves to store the monitored data
+                 Must not exist. Specify full path!
+   time        = optional flag for appending output with epoch timestamp
+                 NOTE: It is NOT supported by IOParser.java
+
+
+------------------------------------------------------------------------
+stop_collector.sh
+-----------------
+Stop iostat and vmstat on all slave hosts and gather the outputs
+
+Usage: stop_collector.sh slaves_file monitor_dir collect_dir"
+   slaves_file = file with slave nodes"
+   monitor_dir = directory on slaves with monitored data"
+   collect_dir = local directory to collect the monitoring files"
+
+
+------------------------------------------------------------------------
+IOParser.java
+-------------
+Usage: 
+  IOParser /path/to/iostat-file /path/to/vmstat-file /path/to/outputfile
+
+The output format is the following:
+
+DISK IO
+MBRead/s MBWrite/s
+10.88 13.40
+0.00 0.00
+0.00 0.00
+....
+CPU
+%user %nice %system %iowait %steal %idle
+15.48 0.10 5.18 25.57 2.52 51.15
+....
+Memory
+swpd free buff  cache
+28 32276 4808 1628932
+...
+
+
