@@ -44,7 +44,7 @@ my $WAIT  = $ARGV[1];
 my $CMD    = $ARGV[2];
 
 # Start data generation
-println qq(Starting the coping at: ) . `date`;
+println qq(Starting the command execution at: ) . `date`;
 println qq(Input Parameters:);
 println qq(  File with slaves: $SLAVES_FILE);
 println qq(  Wait for each cmd: $WAIT);
