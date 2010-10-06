@@ -70,11 +70,10 @@ for each table, or equivalently 20/5=4GB of data totally.
 ---------------------------------------------------------------------------
 # To generate some random text (50 GB)for Terasort 
 #(500000000 * 100 bytes_per_rec = 50GB using 100 map tasks)
-${HADOOP_HOME}/bin/hadoop jar hadoop-0.20.2-examples.jar teragen -Dmapred.map.tasks=100 500000000 tera/in
+${HADOOP_HOME}/bin/hadoop jar hadoop-0.20.2-examples.jar teragen -Dmapred.map.tasks=100 500000000 ~/tera/in
 
 
 # To simply generate some random text 
 # (500MB per_map * 2 maps_per_host * numNodes = numNodes GB)
-${HADOOP_HOME}/bin/hadoop jar hadoop-0.20.2-examples.jar randomtextwriter -Dtest.randomtextwrite.bytes_per_map=524288000 -Dtest.randomtextwrite.maps_per_host=2 -Dtest.randomtextwrite.min_words_value=5 -Dtest.randomtextwrite.max_words_value=10 wordcount/in
-
+${HADOOP_HOME}/bin/hadoop jar hadoop-0.20.2-examples.jar randomtextwriter -conf=random_text_conf.xml -outFormat org.apache.hadoop.mapred.TextOutputFormat ~/wordcount/in
 
