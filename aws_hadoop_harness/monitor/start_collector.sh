@@ -40,8 +40,8 @@ do
      ssh $slave "nohup vmstat 3 > ${SAVE_PATH}/vmstat_output-${slave} &" &
   else
      # With timestamp
-     ssh $slave "nohup iostat -m 3 | awk '{line = \$0; \"date +%s\"|getline time; print time \" \" line;}' > ${SAVE_PATH}/iostat_output-${slave} &" 
-     ssh $slave "nohup vmstat 3 | awk '{line = \$0; \"date +%s\"|getline time; print time \" \" line;}' > ${SAVE_PATH}/vmstat_output-${slave} &" 
+     ssh $slave "nohup iostat -m 3 | perl -e 'while (<>) { print time() . \" \$_\"; }' > ${SAVE_PATH}/iostat_output-${slave} &" 
+     ssh $slave "nohup vmstat 3 | perl -e 'while (<>) { print time() . \" \$_\"; }' > ${SAVE_PATH}/vmstat_output-${slave} &" 
   fi
   
 
