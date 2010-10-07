@@ -113,6 +113,17 @@ Example:
 # Running "tar -zxvf <filename>" will produce the actual task attempt dirs/files
 #  for each tar gzipped file
 
+# The userlogs could be rather large and in most case, don't provide a lot of
+# information. However, the most important information in the logs is the
+# amount of data transfers from the map tasks to the reduce tasks. The
+# get_data_transfers.sh script extracts the information from the userlogs
+# from each slave nodes, and copies the transfer files into the
+# transfers subdirectory.
+Usage: ./get_data_transfers.sh <base directory for experiments> <list of Hadoop slave nodes>
+Example: 
+./get_data_transfers.sh BASE /root/SLAVE_NAMES.txt
+
+
 # To run another set of experiments, repeat the above steps starting from the  
 #   "perl gen_exper.pl ..." step, for example, with another XML configuration file
 

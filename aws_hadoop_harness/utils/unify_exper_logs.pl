@@ -7,13 +7,13 @@
 # a single history directory
 #
 # Usage:
-#  perl unify_exper_logs.pl target exper_dir out_dir [move]
+#  perl unify_exper_logs.pl target exper_dir out_dir [mv]
 #  
 #  where:
-#    target    = is one of history, profiles, or userlogs
+#    target    = is one of history, profiles, userlogs, or transfers
 #    exper_dir = Base directory for the harness experiments
 #    out_dir   = The output directory
-#    move      = Optional flag to move the files instead of copying
+#    mv        = Optional flag to move the files instead of copying
 #
 # Assumptions/Requirements:
 #  The exper_dir is a valid directory with experiments and the file
@@ -38,7 +38,7 @@ sub println {
 if ($#ARGV != 2 && $#ARGV != 3)
 {
    println qq(UsageL perl $0 target exper_dir out_dir [mv]);
-   println qq(  target    = is one of history, profiles, or userlogs);
+   println qq(  target    = is one of history, profiles, userlogs, or transfers);
    println qq(  exper_dir = Base directory for the harness experiments);
    println qq(  out_dir   = The output directory \(must exist\));
    println qq(  mv        = Optional flag to move the files instead of copying);
@@ -53,9 +53,9 @@ my $CMD       = ($#ARGV == 3) ? $ARGV[3] : "cp -r";
 my $EXPER_LIST = $EXPER_DIR . "/RANDOMIZED_EXPERIMENT_LIST.txt";
 
 # Error checking
-if ($TARGET ne "history" && $TARGET ne "userlogs" && $TARGET ne "profiles")
+if ($TARGET ne "history" && $TARGET ne "userlogs" && $TARGET ne "profiles" && $TARGET ne "transfers")
 {
-   println qq(ERROR: The only valid options for target is history, userlogs or profiles);
+   println qq(ERROR: The only valid options for target are history, userlogs, profiles, or transfers);
    exit(-1);
 } 
 
@@ -100,7 +100,7 @@ mkdir $output;
 for $exper (@expers)
 {
    print ".";
-   system qq($CMD $EXPER_DIR/$exper/$TARGET/* $output/.);
+   system qq($CMD $EXPER_DIR/$exper/$TARGET/* $output/. > /dev/null 2>&1);
 }
 
 # Done
