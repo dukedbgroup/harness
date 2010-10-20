@@ -125,40 +125,17 @@ cat > $HADOOP_HOME/conf/mapred-site.xml <<EOF
 
 <property>
   <name>mapred.tasktracker.map.tasks.maximum</name>
-  <value>2</value>
+  <value>4</value>
 </property>
 
 <property>
   <name>mapred.tasktracker.reduce.tasks.maximum</name>
-  <value>1</value>
+  <value>2</value>
 </property>
 <property>
   <name>mapred.local.dir</name>
   <value>${MAPRED_DIRS}</value>
 </property>
-<!--<property>
-  <name>mapred.jobtracker.taskScheduler</name>
-  <value>org.apache.hadoop.mapred.FairScheduler</value>
-</property>-->
-<property>
-<name>mapred.fairscheduler.poolnameproperty</name>
-<value>pool.name</value>
-</property>
-<property>
-<name>pool.name</name>
-<value>\${user.name}</value>
-</property>
-<property>
-  <name>fs.s3n.awsAccessKeyId</name>
-  <value>AKIAIMJQR2YQLUDBWYRQ</value>
-</property>
-<property>
-  <name>fs.s3n.awsSecretAccessKey</name>
-  <value>B/5iTb9vKU7BqvGm1a70JNQI0H/qKZQZ2lK59QWX</value>
-</property>
-
-</configuration>
-EOF
 
 # Configure Hadoop for Ganglia
 # overwrite hadoop-metrics.properties
