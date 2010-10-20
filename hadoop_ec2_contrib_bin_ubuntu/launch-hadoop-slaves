@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Launch an EC2 Hadoop slaves.
+
+if [ -z $1 ]; then
+  echo "Cluster name required!"
+  exit -1
+fi
+
+if [ -z $2 ]; then
+  echo "Must specify the number of slaves to start."
+  exit -1
+fi
+
+CLUSTER=$1
+NO_INSTANCES=$2
+
+# Import variables
+bin=`dirname "$0"`
+bin=`cd "$bin"; pwd`
+. "$bin"/hadoop-ec2-env.sh
+
+if [ ! -f $MASTER_IP_PATH ]; then
+  echo "Must start Cluster Master first!"
+  exit -1
+fi
+
+if [ -z $AMI_IMAGE ]; then
+  echo "Please set AMI_IMAGE in $bin/hadoop-ec2-env.sh."
+  exit -1
+fi
+
+MASTER_HOST=`cat $MASTER_PRIVATE_IP_PATH`
+MASTER_EC2_HOST=`cat $MASTER_IP_PATH`
+MASTER_ZONE=`cat $MASTER_ZONE_PATH`
+
+# Substituting master hostname
+sed -e "s|%MASTER_HOST%|$MASTER_HOST|" "$bin"/$USER_DATA_FILE > "$bin"/${USER_DATA_FILE}.slave
+# make the file user executable
+chmod u+x "$bin"/${USER_DATA_FILE}.slave
+
+# Start slaves
+echo "Adding $2 node(s) to cluster group $CLUSTER with AMI $AMI_IMAGE"
+#ec2-run-instances $AMI_IMAGE -n "$NO_INSTANCES" -g "$CLUSTER" -k "$KEY_NAME" -f "$bin"/$USER_DATA_FILE.slave -t "$INSTANCE_TYPE" -z "$MASTER_ZONE" $KERNEL_ARG | grep INSTANCE | awk '{print $2}' > "${AWS_HADOOP_HARNESS_HOME}"/SLAVE_INSTANCE_IDS.txt
+ec2-run-instances $AMI_IMAGE -n "$NO_INSTANCES" -g "$CLUSTER" -k "$KEY_NAME" -t "$INSTANCE_TYPE" -z "$MASTER_ZONE" $KERNEL_ARG | grep INSTANCE | awk '{print $2}' > SLAVE_INSTANCE_IDS.txt
+cat SLAVE_INSTANCE_IDS.txt
+
+echo "Waiting for the $2 instances to start"
+
+# we will capture the private IPs of the slaves in SLAVE_NAMES.txt
+echo -n >SLAVE_NAMES.txt
+
+for INSTANCE in $(<SLAVE_INSTANCE_IDS.txt); do
+   while true; do
+     # get private dns for the instance
+     INSTANCE_HOST=`ec2-describe-instances $INSTANCE | grep running | awk '{print $5}'`
+     if [ ! -z $INSTANCE_HOST ]; then
+       echo "$INSTANCE_HOST" >> SLAVE_NAMES.txt
+       echo "Instance $INSTANCE has been assigned private IP $INSTANCE_HOST"
+       break;
+     fi
+     sleep 1
+   done
+done
+
+scp $SSH_OPTS "${bin}/${USER_DATA_FILE}.slave" "ubuntu@$MASTER_EC2_HOST:/home/ubuntu/ec2_hadoop_slave_init.sh"
+scp $SSH_OPTS SLAVE_NAMES.txt "ubuntu@$MASTER_EC2_HOST:/home/ubuntu/SLAVE_NAMES.txt"
+scp $SSH_OPTS "${bin}/start_hadoop_on_slaves.sh" "ubuntu@$MASTER_EC2_HOST:/home/ubuntu/start_hadoop_on_slaves.sh"
+ssh $SSH_OPTS "ubuntu@$MASTER_EC2_HOST" "/home/ubuntu/start_hadoop_on_slaves.sh"
+
+# Clean up
+rm "$bin"/${USER_DATA_FILE}.slave
+rm SLAVE_INSTANCE_IDS.txt
+rm SLAVE_NAMES.txt
+
