@@ -98,7 +98,10 @@ cat > $HADOOP_HOME/conf/hdfs-site.xml <<EOF
   <name>dfs.block.size</name>
   <value>134217728</value>
 </property>
-
+<property>
+  <name>dfs.permissions.enabled</name>
+  <value>false</value>
+</property>
 <property>
   <name>dfs.replication</name>
   <value>1</value>
@@ -162,7 +165,7 @@ EOF
 
 [ ! -f /etc/hosts ] &&  echo "127.0.0.1 localhost" > /etc/hosts
 
-mkdir -p /mnt/hadoop/logs
+sudo -u ubuntu mkdir -p /mnt/hadoop/logs
 
 # not set on boot
 export USER="root"
@@ -201,6 +204,6 @@ else
   "$HADOOP_HOME"/bin/hadoop-daemon.sh start datanode
   "$HADOOP_HOME"/bin/hadoop-daemon.sh start tasktracker
 fi
-
+chmod 666 /mnt/hadoop/logs/SecurityAuth.audit
 # Run this script on next boot
 rm -f /var/ec2/ec2-run-user-data.*
