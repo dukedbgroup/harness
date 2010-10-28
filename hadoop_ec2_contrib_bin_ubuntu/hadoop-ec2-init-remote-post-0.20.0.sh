@@ -95,7 +95,7 @@ cat > $HADOOP_HOME/conf/hdfs-site.xml <<EOF
   <value>${DFS_DIRS}</value>
 </property>
 <property>
-  <name>dfs.block.size</name>
+  <name>dfs.blocksize</name>
   <value>134217728</value>
 </property>
 <property>
