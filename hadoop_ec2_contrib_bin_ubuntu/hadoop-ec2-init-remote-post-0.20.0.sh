@@ -4,6 +4,8 @@
 # Script that is run on each EC2 instance used as a Hadoop node
 ################################################################################
 sudo chown -R ubuntu /mnt
+sudo perl -pi -e 's/(nobootwait),(\S+)/$2,$1/' /etc/fstab
+sudo stop mountall
 DFS_DIRS=/mnt/hadoop/dfs/data
 MAPRED_DIRS=/mnt/hadoop/mapred/local
 i=2
