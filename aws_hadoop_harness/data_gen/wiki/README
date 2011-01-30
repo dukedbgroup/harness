@@ -1,0 +1,26 @@
+Author: Herodotos Herodotou
+Date: January 25, 2011
+
+Description:
+-----------
+The setup_wiki.sh script will:
+(1) download the XML dump of Wikipedia (10/11/2010)
+(2) load it into HDFS as XML
+(3) convert it into a simple text file
+(4) convert it into a block-compressed SequenceFile
+(5) build the Wikipedia link graph
+
+Usage:
+------
+./setup_wiki.sh
+
+Notes:
+------
+1. The entire process on a 15 c1-medium EC2 node cluster takes about 2 hours
+2. The script will download the XML file in the directory /mnt/wiki
+3. The script will use the HDFS directory /user/root/wiki/
+   The final HDFS directory structure will be:
+   /user/root/wiki/txt       -- Contains the simple text file representation
+   /user/root/wiki/files     -- Contains the SequenceFile representation
+   /user/root/wiki/adjacency -- Contains the adjacency lists of the link graph
+
