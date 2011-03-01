@@ -95,3 +95,83 @@ Assumptions/Requirements:
 Example:
  perl merge_files.pl output input_1 input_2
 
+
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+Script: gen_profiles.pl
+----------------------------
+This script can be used to generate the XML profiles of all the jobs
+for an experiment.
+
+Usage:
+  perl gen_profiles.pl profile_jar exper_dir out_dir
+  
+  where:
+    profile_jar = The profile jar
+    exper_dir = Base directory for the harness experiments
+    out_dir   = The output directory
+
+Assumptions/Requirements:
+  The exper_dir is a valid directory with experiments and contains:
+    (a) a file called 'HADOOP_JOB_IDS.txt'
+    (b) a directory called 'history' with the conf/history files
+    (c) a directory called 'profiles' with the profile files
+
+Example:
+  perl gen_profiles.pl /root/starfish-profiles.jar BASE OUT
+  Note: The OUT directory will be created and it will contain
+        files of the form profile_job_id.xml
+
+
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+Script: predict_time.pl
+----------------------------
+This script can be used to test the What-if Engine for all the jobs
+in a harness experiment.
+
+Usage:
+  perl predict_time.pl whatif_jar exper_dir profiles
+  
+  where:
+    whatif_jar = The whatif jar
+    exper_dir  = Base directory for the harness experiments
+    profiles   = The directory with the job profiles or a single profile file
+
+Assumptions/Requirements:
+  The exper_dir is a valid directory with experiments and contains:
+    (a) a file called 'HADOOP_JOB_IDS.txt'
+    (b) a directory called 'results/history'
+
+  The profiles_dir is a valid directory with the job profiles
+  named either 'profile_job_EXPTID.xml' or 'profile_JOBID.xml',
+  or a single job profile file.
+
+
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+Script: adjust_profiles.pl
+----------------------------
+This script can be used to generate the adjusted XML profiles of all the jobs
+for two experiments. The first experiment run without compression and the
+second run with compression.
+
+Usage:
+  perl adjust_profiles.pl profile_jar compr_no_dir compr_yes_dir out_dir
+  
+  where:
+    profile_jar   = The profile jar
+    compr_no_dir  = Base directory for experiments without compression
+    compr_yes_dir = Base directory for experiments with compression
+    out_dir       = The output directory
+
+Assumptions/Requirements:
+  The compr_*_dir are valid directories with experiments and:
+    (a) each contains a file called 'HADOOP_JOB_IDS.txt'
+    (b) each contains a directory called results/job_profiles
+    (c) have the same number of experiments with one-to-one correspondance
+
+
+
+
+
