@@ -46,6 +46,8 @@ KEY_NAME=my-keypair
 PRIVATE_KEY_PATH=`echo "${EC2_KEYDIR}"/"id_rsa-${KEY_NAME}"`
 # Ned's convention:
 #PRIVATE_KEY_PATH=`echo "$EC2_KEYDIR"/"$KEY_NAME"`
+# Fei's convention:
+# PRIVATE_KEY_PATH=`echo "$EC2_KEYDIR"/"$KEY_NAME.pem"`
 
 # The version of Hadoop to use.
 #  Note: HADOOP_VERSION has to be 0.19.0 or less, or 0.20.2. AMIs can be accessed 
@@ -69,8 +71,9 @@ INSTANCE_TYPE="m1.small"
 #    AMI ami-5729c03e: Ned created with Hadoop 0.20.2 (32 bit)
 #    AMI ami-2817ff41: Shivnath created with Hadoop 0.20.2, Ganglia (32 bit)
 #    AMI ami-58689831: Harold created with Hadoop 20 Warehouse (64 bit)
+#    AMI ami-a0ee12c9: Fei created with Hadoop 0.20.2 (64 bit)
 AMI_IMAGE_32="ami-2817ff41"
-AMI_IMAGE_64="ami-58689831"
+AMI_IMAGE_64="ami-a0ee12c9"
 
 
 # Import local settings if they exists and OVEWRITE the defaults
