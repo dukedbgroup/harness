@@ -61,6 +61,11 @@ cat > $HADOOP_HOME/conf/hdfs-site.xml <<EOF
   <value>536870912</value>
 </property>
 
+<property>
+  <name>dfs.data.dir</name>
+  <value>/mnt/hadoop/dfs/data,/data/hadoop/dfs/data</value>
+</property>
+
 </configuration>
 EOF
 
@@ -73,6 +78,11 @@ cat > $HADOOP_HOME/conf/mapred-site.xml <<EOF
 <property>
   <name>mapred.job.tracker</name>
   <value>hdfs://$MASTER_HOST:50002</value>
+</property>
+
+<property>
+  <name>mapred.local.dir</name>
+  <value>/mnt/hadoop/mapred/local,/data/hadoop/mapred/local</value>
 </property>
 
 <property>
