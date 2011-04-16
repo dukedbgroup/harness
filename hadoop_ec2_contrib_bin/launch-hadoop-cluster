@@ -31,6 +31,17 @@ if [ -z $2 ]; then
   exit -1
 fi
 
+if [ ! -z $3 ]; then
+  if [ "$3" == "m1.small" -o "$3" == "m1.large" -o "$3" == "m1.xlarge" -o "$3" == "c1.medium" -o "$3" == "c1.xlarge" ]; then
+     export FORCE_INSTANCE_TYPE=$3
+  else
+     echo "Invalid instance type: $3"
+     echo "Supported types: m1.small, m1.large, m1.xlarge, c1.medium, c1.xlarge"
+     exit -1;
+  fi
+fi
+
+
 if ! "$bin"/launch-hadoop-master $1 ; then
   exit $?
 fi

@@ -23,7 +23,7 @@ if [ $# = 0 ]; then
   echo "Usage: hadoop-ec2 COMMAND"
   echo "where COMMAND is one of:"
   echo "  list                                 list all running Hadoop EC2 clusters"
-  echo "  launch-cluster <group> <num slaves>  launch a cluster of Hadoop EC2 instances - launch-master then launch-slaves"
+  echo "  launch-cluster <group> <num slaves> [instance type]  launch a cluster of Hadoop EC2 instances - launch-master then launch-slaves"
   echo "  launch-master  <group>               launch or find a cluster master"
   echo "  launch-slaves  <group> <num slaves>  launch the cluster slaves"
   echo "  terminate-cluster  <group>           terminate all Hadoop EC2 instances"

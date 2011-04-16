@@ -47,14 +47,6 @@ PRIVATE_KEY_PATH=`echo "${EC2_KEYDIR}"/"id_rsa-${KEY_NAME}"`
 # Ned's convention:
 #PRIVATE_KEY_PATH=`echo "$EC2_KEYDIR"/"$KEY_NAME"`
 
-# The EC2 instance type: m1.small, m1.large, m1.xlarge
-#  NOTE: we do not support AMIs for all types of instances
-#INSTANCE_TYPE="m1.small"
-#INSTANCE_TYPE="m1.large"
-#INSTANCE_TYPE="m1.xlarge"
-INSTANCE_TYPE="c1.medium"
-#INSTANCE_TYPE="c1.xlarge"
-
 # The version of Hadoop to use.
 #  Note: HADOOP_VERSION has to be 0.19.0 or less, or 0.20.2. AMIs can be accessed 
 #    for these versions only. Intermediate versions are not supported. 
@@ -62,6 +54,23 @@ INSTANCE_TYPE="c1.medium"
 #      selected based on HADOOP_VERSION
 #HADOOP_VERSION=0.19.0
 HADOOP_VERSION=0.20.2
+
+# The EC2 instance type: m1.small, m1.large, m1.xlarge
+#  NOTE: we do not support AMIs for all types of instances
+INSTANCE_TYPE="m1.small"
+#INSTANCE_TYPE="m1.large"
+#INSTANCE_TYPE="m1.xlarge"
+#INSTANCE_TYPE="c1.medium"
+#INSTANCE_TYPE="c1.xlarge"
+
+# The AMI image to use with HADOOP_VERSION 0.20.2
+# If INSTANCE_TYPE is "m1.small" or "c1.medium", AMI_IMAGE_32 is used.
+# Otherwise, AMI_IMAGE_64 is used.
+#    AMI ami-5729c03e: Ned created with Hadoop 0.20.2 (32 bit)
+#    AMI ami-2817ff41: Shivnath created with Hadoop 0.20.2, Ganglia (32 bit)
+#    AMI ami-58689831: Harold created with Hadoop 20 Warehouse (64 bit)
+AMI_IMAGE_32="ami-2817ff41"
+AMI_IMAGE_64="ami-58689831"
 
 
 # Import local settings if they exists and OVEWRITE the defaults
@@ -82,14 +91,31 @@ fi
 ###################################################################################
 ###################################################################################
 
+# If $FORCE_INSTANCE_TYPE is defined, OVERWRITE the above setting.
+if [ ! -z $FORCE_INSTANCE_TYPE ]; then
+   INSTANCE_TYPE=$FORCE_INSTANCE_TYPE
+fi
+
 # SSH options used when connecting to EC2 instances.
 SSH_OPTS=`echo -i "$PRIVATE_KEY_PATH" -o StrictHostKeyChecking=no -o ServerAliveInterval=30`
 
 # The script to run on instance boot.
-if [ $HADOOP_VERSION = "0.20.2" ]; then
-  USER_DATA_FILE=hadoop-ec2-init-remote-post-0.20.0.sh
+if [ $HADOOP_VERSION == "0.20.2" ]; then
+   if [ "$INSTANCE_TYPE" == "m1.small" ]; then
+      USER_DATA_FILE=hadoop-ec2-init/hadoop-ec2-init-0.20.0-m1.small.sh
+   elif [ "$INSTANCE_TYPE" == "m1.large" ]; then
+      USER_DATA_FILE=hadoop-ec2-init/hadoop-ec2-init-0.20.0-m1.large.sh
+   elif [ "$INSTANCE_TYPE" == "m1.xlarge" ]; then
+      USER_DATA_FILE=hadoop-ec2-init/hadoop-ec2-init-0.20.0-m1.xlarge.sh
+   elif [ "$INSTANCE_TYPE" == "c1.medium" ]; then
+      USER_DATA_FILE=hadoop-ec2-init/hadoop-ec2-init-0.20.0-c1.medium.sh
+   elif [ "$INSTANCE_TYPE" == "c1.xlarge" ]; then
+      USER_DATA_FILE=hadoop-ec2-init/hadoop-ec2-init-0.20.0-c1.xlarge.sh
+   else
+      USER_DATA_FILE=hadoop-ec2-init/hadoop-ec2-init-0.20.0-other.type.sh
+   fi
 else 
-  USER_DATA_FILE=hadoop-ec2-init-remote-pre-0.20.0.sh
+   USER_DATA_FILE=hadoop-ec2-init/hadoop-ec2-init-remote-pre-0.20.0.sh
 fi
 
 # The Amazon S3 bucket where the Hadoop AMI is stored. Used only for HADOOP_VERSION <= 0.19.0 
@@ -144,14 +170,13 @@ fi
 ######################################################################
 
 # Finding Hadoop image. See https://wiki.duke.edu/display/hadoop/List+of+Current+AMI+Images
-# AMI ami-5729c03e: Ned created with Hadoop 0.20.2
-# AMI ami-0153ba68: Shivnath created with Hadoop 0.20.2 and Ganglia (DEPRECATED)
-# AMI ami-2817ff41: Shivnath created with Hadoop 0.20.2, Ganglia, and BTrace
-if [ $HADOOP_VERSION = "0.20.2" ]; then
-   # AMI_IMAGE="ami-5729c03e"
-   # AMI_IMAGE="ami-0153ba68"
-   AMI_IMAGE="ami-2817ff41"
-else 
+if [ $HADOOP_VERSION == "0.20.2" ]; then
+   if [ "$INSTANCE_TYPE" == "m1.small" -o "$INSTANCE_TYPE" == "c1.medium" ]; then
+      AMI_IMAGE=${AMI_IMAGE_32}
+   else
+      AMI_IMAGE=${AMI_IMAGE_64}
+   fi
+else
    # This part will only work for $HADOOP_VERSION being 0.19.0 or less 
    AMI_IMAGE=`ec2-describe-images -a | grep $S3_BUCKET | grep $HADOOP_VERSION | grep $ARCH | grep available | awk '{print $2}'`   
 fi
