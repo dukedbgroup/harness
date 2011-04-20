@@ -105,6 +105,11 @@ cat > $HADOOP_HOME/conf/mapred-site.xml <<EOF
   <value>-Xmx400m</value>
 </property>
 
+<property>
+  <name>io.sort.mb</name>
+  <value>200</value>
+</property>
+
 </configuration>
 EOF
 
