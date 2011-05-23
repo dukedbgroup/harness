@@ -1,11 +1,64 @@
 <?xml version='1.0'?>
 <configuration>
-	<property>
-		<name>mapred.reduce.tasks</name>
+      <property>
+                <name>jar_path</name>
+                <type>HADOOP_JAR</type>
+                <description>Full path to the jar file to run on the EC2 node. Note:
+                        we assume that ${HADOOP_HOME} is defined on the EC2 nodes.
+                        Only a single value is allowed for this parameter.
+                </description>
+                <numvalues>1</numvalues>
+                <values>${HADOOP_HOME}/hadoop-*-examples.jar</values>
+        </property>
+        <property>
+                <name>jar_class_name</name>
+                <type>HADOOP_JAR</type>
+                <description>The name of each class containing the main function 
+                    to run from the jar. For example, this will be the join type 
+                    (which are mapped to the main classes) for the mrjoins.jar 
+                    code, or one of the example programs from the hadoop-*-examples.jar 
+                    code, or simply omitted if the jar includes a manifest with a main 
+                    class specification. Multiple delimitter-separated values are 
+                    allowed for this parameter.
+                </description>
+                <numvalues>1</numvalues>
+                <values>terasort</values>
+        </property>
+        <property>
+                <name>jar_input_params</name>
+                <type>HADOOP_JAR</type>
+                <description>Valid string that specifies the input parameters for the 
+                    program. For example, for the joins in the mrjoins.jar code, the 
+                    input parameters are the paths to the tables (with globbing support) 
+                    and input column numbers starting at 1. Multiple delimitter-separated
+                    values are allowed for this parameter.
+                </description>
+                <numvalues>1</numvalues>
+                <values>/user/shivnath/tera/in</values>
+        </property>
+        <property>
+                <name>jar_output_prefix</name>
+                <type>HADOOP_JAR</type>
+                <description>Prefix of the output HDFS path for the experiment. 
+                  The actual output directory will be ${jar_output_prefix}/${exptID},
+                  where ${exptID} is an identifier for the experiment. For example, 
+                  if we specified jar_output_prefix as /user/shivnath/tera/out,
+                  then the output directory for the Experiment 1 will be
+                  /user/shivnath/tera/out/expt1. Setting the delete_on_exit flag
+                  to false means that the output directory will NOT be deleted
+                  when the MapReduce job for the experiment completes. This flag
+                  is true by default. Only a single value is allowed for this parameter.
+                </description>
+                <numvalues>1</numvalues>
+                <values>/user/shivnath/tera/out</values>
+                <delete_on_exit>true</delete_on_exit>
+        </property>
+        <property>
+                <name>mapred.reduce.tasks</name>
                 <description>Number of reduce tasks</description>
                 <numvalues>2</numvalues>
-		<values>10,50</values>
-	</property>
+                <values>5,10</values>
+        </property>
 	<property>
 		<name>mapred.child.java.opts</name>
                 <description>Java opts for the task tracker child processes</description>
