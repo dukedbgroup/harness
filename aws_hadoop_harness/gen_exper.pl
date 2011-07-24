@@ -365,7 +365,7 @@ foreach $file (@files) {
 		if ($profile_flag eq "false") {
 		    $hadoop_run_jar_command = '${HADOOP_HOME}' . "/bin/hadoop jar $jar_path $jar_class_name -conf $XML_CONF_FILE_NAME $jar_input_params $hdfs_output_path" . " >& $EXPERIMENT_OUTPUT_FILE &";
 		}else {
-			$hadoop_run_jar_command = "$STARFISH_BUILD_DIR/bin/profile jar $jar_path $jar_class_name -conf $XML_CONF_FILE_NAME -Dstarfish.profiler.output.dir=$EXP_BASE_DIR/results $jar_input_params $hdfs_output_path" . " >& $EXPERIMENT_OUTPUT_FILE &";
+			$hadoop_run_jar_command = "$STARFISH_BUILD_DIR/bin/profile hadoop jar $jar_path $jar_class_name -conf $XML_CONF_FILE_NAME -Dstarfish.profiler.output.dir=$EXP_BASE_DIR/results $jar_input_params $hdfs_output_path" . " >& $EXPERIMENT_OUTPUT_FILE &";
 		}
 		# command to delete the HDFS output dir created for the experiment
 		$hadoop_delete_hdfs_output_command = '${HADOOP_HOME}' . "/bin/hadoop fs -rmr $hdfs_output_path";
