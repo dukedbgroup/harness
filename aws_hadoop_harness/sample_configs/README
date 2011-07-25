@@ -1,0 +1,38 @@
+
+-----------------------------------------------------
+Contact shivnath@cs.duke.edu in case of any questions
+-----------------------------------------------------
+
+This directory contains sample configuration files for 
+use in the AWS Hadoop Harness provided by the Starfish
+project at Duke. 
+
+config.1.xml and config.5.xml are valid files that you
+can use in a command of the following form on a Hadoop 
+cluster started on EC2 using the commands in 
+hadoop_ec2_contrib_bin provided by the Starfish
+project at Duke. 
+
+# Example commands to run on the Hadoop Master node on EC2
+
+perl aws_hadoop_harness/gen_exper.pl aws_hadoop_harness/sample_configs/config.1.xml BASE1
+
+perl aws_hadoop_harness/gen_exper.pl aws_hadoop_harness/sample_configs/config.1.xml BASE2 profile
+
+# Double check that the jar file path in the config.5.xml file is valid
+perl aws_hadoop_harness/gen_exper.pl aws_hadoop_harness/sample_configs/config.5.xml BASE3
+
+# Double check that the jar file path in the config.5.xml file is valid
+perl aws_hadoop_harness/gen_exper.pl aws_hadoop_harness/sample_configs/config.5.xml BASE4 profile
+
+
+******************* NOTE *******************
+******************* NOTE *******************
+
+Use the other files such as config.6.xml, config.7.xml only as
+guidelines/documentation to see how to specify parameters
+in various ways in the XML file input to the 
+aws_hadoop_harness/gen_exper.pl script
+
+******************* NOTE *******************
+******************* NOTE *******************

@@ -1,11 +1,13 @@
 Launching the Hadoop Cluster
---------------------------------------
+----------------------------
 
-# NOTE: All commands here will be run from the ${AWS_HADOOP_HARNESS_HOME}
+# NOTE: All commands here will be run from ${AWS_HADOOP_HARNESS_HOME}
 cd ${AWS_HADOOP_HARNESS_HOME} 
 
-# Launch a Hadoop cluster: 1 Master + N Slaves
-${HADOOP_EC2_HOME}/hadoop-ec2 launch-cluster test-hadoop-cluster 2
+# Launch a Hadoop cluster: 1 Master + N Slaves 
+${HADOOP_EC2_HOME}/hadoop-ec2 launch-cluster test-hadoop-cluster <number of slaves> <node type on EC2>
+# Example: Launch a Hadoop cluster with 1 Master + 2 Slaves; all of the m1.small type
+${HADOOP_EC2_HOME}/hadoop-ec2 launch-cluster test-hadoop-cluster 2 m1.small
 
 # Describe the instances (used to get public ip address etc)
 ${EC2_HOME}/bin/ec2-describe-instances 
@@ -26,5 +28,6 @@ ${HADOOP_EC2_HOME}/hadoop-ec2 push test-hadoop-cluster /local/path/to/file
 ${HADOOP_EC2_HOME}/hadoop-ec2 pull test-hadoop-cluster /master/path/to/file
 
 # Terminate the cluster and release the EC2 nodes (run from local machine)
+# *** Enter yes when the command asks for confirmation ***
 ${HADOOP_EC2_HOME}/hadoop-ec2 terminate-cluster test-hadoop-cluster
 
