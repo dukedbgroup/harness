@@ -37,7 +37,7 @@ AWS_ACCOUNT_ID=${AWS_USER_ID}
 EC2_KEYDIR=`dirname "$EC2_PRIVATE_KEY"`
 
 # The EC2 key name used to launch instances. Change it as needed. 
-KEY_NAME=my-keypair
+KEY_NAME=hpc-hpcinfra
 # Ned's convention:
 #KEY_NAME="${EC2_KEYPAIR_NAME}"
 
@@ -47,7 +47,7 @@ PRIVATE_KEY_PATH=`echo "${EC2_KEYDIR}"/"id_rsa-${KEY_NAME}"`
 # Ned's convention:
 #PRIVATE_KEY_PATH=`echo "$EC2_KEYDIR"/"$KEY_NAME"`
 # Fei's convention:
-# PRIVATE_KEY_PATH=`echo "$EC2_KEYDIR"/"$KEY_NAME.pem"`
+PRIVATE_KEY_PATH=`echo "$EC2_KEYDIR"/"$KEY_NAME.pem"`
 
 # The version of Hadoop to use.
 #  Note: HADOOP_VERSION has to be 0.19.0 or less, or 0.20.2. AMIs can be accessed 
@@ -114,6 +114,8 @@ if [ $HADOOP_VERSION == "0.20.2" ]; then
       USER_DATA_FILE=hadoop-ec2-init/hadoop-ec2-init-0.20.0-c1.medium.sh
    elif [ "$INSTANCE_TYPE" == "c1.xlarge" ]; then
       USER_DATA_FILE=hadoop-ec2-init/hadoop-ec2-init-0.20.0-c1.xlarge.sh
+   elif [ "$INSTANCE_TYPE" == "cc1.4xlarge" ]; then
+      USER_DATA_FILE=hadoop-ec2-init/hadoop-ec2-init-0.20.0-cc1.4xlarge.sh
    else
       USER_DATA_FILE=hadoop-ec2-init/hadoop-ec2-init-0.20.0-other.type.sh
    fi

@@ -37,10 +37,10 @@ HADOOP_INSTANCES=`echo "$HADOOP_INSTANCES" | grep INSTANCE | grep running`
 
 echo "Running Hadoop instances:"
 echo "$HADOOP_INSTANCES"
-read -p "Terminate all instances? [yes or no]: " answer
+#read -p "Terminate all instances? [yes or no]: " answer
 
-if [ "$answer" != "yes" ]; then
-  exit 1
-fi
+#if [ "$answer" != "yes" ]; then
+#  exit 1
+#fi
 
 ec2-terminate-instances `echo "$HADOOP_INSTANCES" | awk '{print $2}'`
