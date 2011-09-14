@@ -37,7 +37,7 @@ AWS_ACCOUNT_ID=${AWS_USER_ID}
 EC2_KEYDIR=`dirname "$EC2_PRIVATE_KEY"`
 
 # The EC2 key name used to launch instances. Change it as needed. 
-KEY_NAME=hpc-hpcinfra
+KEY_NAME=benchmark
 # Ned's convention:
 #KEY_NAME="${EC2_KEYPAIR_NAME}"
 
@@ -50,12 +50,13 @@ PRIVATE_KEY_PATH=`echo "${EC2_KEYDIR}"/"id_rsa-${KEY_NAME}"`
 PRIVATE_KEY_PATH=`echo "$EC2_KEYDIR"/"$KEY_NAME.pem"`
 
 # The version of Hadoop to use.
-#  Note: HADOOP_VERSION has to be 0.19.0 or less, or 0.20.2. AMIs can be accessed 
+#  Note: HADOOP_VERSION has to be 0.19.0 or less, 0.20.2, or 0.20.203.0. AMIs can be accessed 
 #    for these versions only. Intermediate versions are not supported. 
 #    See launch-hadoop-master and launch-hadoop-slaves for how the AMI is 
 #      selected based on HADOOP_VERSION
 #HADOOP_VERSION=0.19.0
-HADOOP_VERSION=0.20.2
+#HADOOP_VERSION=0.20.2
+HADOOP_VERSION=0.20.203.0
 
 # The EC2 instance type: m1.small, m1.large, m1.xlarge
 #  NOTE: we do not support AMIs for all types of instances
@@ -72,8 +73,12 @@ INSTANCE_TYPE="m1.small"
 #    AMI ami-2817ff41: Shivnath created with Hadoop 0.20.2, Ganglia (32 bit)
 #    AMI ami-58689831: Harold created with Hadoop 20 Warehouse (64 bit)
 #    AMI ami-a0ee12c9: Fei created with Hadoop 0.20.2 (64 bit)
-AMI_IMAGE_32="ami-2817ff41"
-AMI_IMAGE_64="ami-a0ee12c9"
+#    AMI ami-49975520: Fei created with Hadoop 0.20.203.0, Pig 0.9.0, Ant (32 bit)
+#    AMI ami-7b975512: Fei created with Hadoop 0.20.203.0, Pig 0.9.0, Ant (64 bit)
+#AMI_IMAGE_32="ami-2817ff41"
+#AMI_IMAGE_64="ami-a0ee12c9"
+AMI_IMAGE_32="ami-49975520"
+AMI_IMAGE_64="ami-7b975512"
 
 
 # Import local settings if they exists and OVEWRITE the defaults
@@ -103,7 +108,7 @@ fi
 SSH_OPTS=`echo -i "$PRIVATE_KEY_PATH" -o StrictHostKeyChecking=no -o ServerAliveInterval=30`
 
 # The script to run on instance boot.
-if [ $HADOOP_VERSION == "0.20.2" ]; then
+if [ $HADOOP_VERSION == "0.20.2" -o $HADOOP_VERSION == "0.20.203.0" ]; then
    if [ "$INSTANCE_TYPE" == "m1.small" ]; then
       USER_DATA_FILE=hadoop-ec2-init/hadoop-ec2-init-0.20.0-m1.small.sh
    elif [ "$INSTANCE_TYPE" == "m1.large" ]; then
@@ -176,7 +181,7 @@ fi
 ######################################################################
 
 # Finding Hadoop image. See https://wiki.duke.edu/display/hadoop/List+of+Current+AMI+Images
-if [ $HADOOP_VERSION == "0.20.2" ]; then
+if [ $HADOOP_VERSION == "0.20.2" -o $HADOOP_VERSION == "0.20.203.0" ]; then
    if [ "$INSTANCE_TYPE" == "m1.small" -o "$INSTANCE_TYPE" == "c1.medium" ]; then
       AMI_IMAGE=${AMI_IMAGE_32}
    else
