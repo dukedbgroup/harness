@@ -70,8 +70,6 @@ INSTANCE_TYPE="m1.small"
 #    AMI ami-58689831: Harold created with Hadoop 20 Warehouse (64 bit)
 #    AMI ami-2817ff41: Shivnath created with Hadoop 0.20.2, Ganglia (32 bit)
 #    AMI ami-a0ee12c9: Fei created with Hadoop 0.20.2, Ganglia (64 bit)
-#    AMI ami-49975520: Fei created with Hadoop 0.20.203.0, Pig 0.9.0, Ant (32 bit)
-#    AMI ami-7b975512: Fei created with Hadoop 0.20.203.0, Pig 0.9.0, Ant (64 bit)
 AMI_IMAGE_32="ami-2817ff41"
 AMI_IMAGE_64="ami-a0ee12c9"
 

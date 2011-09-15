@@ -135,6 +135,9 @@ export USER="root"
 
 if [ "$IS_MASTER" == "true" ]; then
   # MASTER
+  # Create Pig log directory
+  [ ! -e /mnt/pig/logs ] && mkdir -p /mnt/pig/logs
+
   # Prep Ganglia
   sed -i -e "s|\( *mcast_join *=.*\)|#\1|" \
          -e "s|\( *bind *=.*\)|#\1|" \
