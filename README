@@ -75,25 +75,21 @@ Note: suppose you create a keypair named my-keypair
 Then, the Hadoop EC2 configuration ${HADOOP_EC2_HOME}/hadoop-ec2-env.sh 
 makes two assumptions 
 
-****************** Caveat 1 as noted later *********************
-1. that the private key file for this key is named as id_rsa-my-keypair
-2. this private key file is stored in the same *directory* where you placed 
+ASSUMPTION:
+This private key file is stored in the same *directory* where you placed 
     your AWS private key (i.e., the ${EC2_PRIVATE_KEY} above)
-****************** Caveat 1 as noted later *********************
 
-If you want to follow a Ned's convention (as noted in 
-${HADOOP_EC2_HOME}/hadoop-ec2-env.sh), you can create the file
-${HADOOP_EC2_HOME}/local_ec2_settings.sh and add the two lines:
+Copy the template file with the local settings
+cp ${HADOOP_EC2_HOME}/local_ec2_settings.sh.template ${HADOOP_EC2_HOME}/local_ec2_settings.sh
 
-KEY_NAME="${EC2_KEYPAIR_NAME}"
-PRIVATE_KEY_PATH=`echo "$EC2_KEYDIR"/"$KEY_NAME"`
-
-You may add other settings in ${HADOOP_EC2_HOME}/local_ec2_settings.sh
-to overwrite the defaults ones: 
-INSTANCE_TYPE - Supported types: m1.small, m1.large, m1.xlarge, c1.medium, c1.xlarge
-HADOOP_VERSION - Supported versions: 0.20.0, less than 0.19.0
-AMI_IMAGE_32 - Will be selected if INSTANCE_TYPE is m1.small or c1.medium
-AMI_IMAGE_64 - Will be selected if INSTANCE_TYPE is m1.large or m1.xlarge or c1.xlarge
+Modify the file ${HADOOP_EC2_HOME}/local_ec2_settings.sh to specify your own 
+settings and credentials:
+  KEY_NAME - Name of your EC2 keypair name
+  PRIVATE_KEY_PATH - The full path to the EC2 keypair file
+  INSTANCE_TYPE - Supported types: m1.small, m1.large, m1.xlarge, c1.medium, c1.xlarge, cc1.4xlarge
+  HADOOP_VERSION - Supported versions: less than 0.19.0, 0.20.2, 0.20.203.0
+  AMI_IMAGE_32 - Will be selected if INSTANCE_TYPE is m1.small or c1.medium
+  AMI_IMAGE_64 - Will be selected if INSTANCE_TYPE is m1.large or m1.xlarge or c1.xlarge
 
 --------------------------------------------------------------
 ----------------------------------------------------------------------------

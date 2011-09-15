@@ -37,17 +37,13 @@ AWS_ACCOUNT_ID=${AWS_USER_ID}
 EC2_KEYDIR=`dirname "$EC2_PRIVATE_KEY"`
 
 # The EC2 key name used to launch instances. Change it as needed. 
-KEY_NAME=benchmark
-# Ned's convention:
-#KEY_NAME="${EC2_KEYPAIR_NAME}"
+#  Should already be defined as a global environmental variable 
+KEY_NAME="${EC2_KEYPAIR_NAME}"
 
 # Where your EC2 private key is stored (created, for example, when following the 
 #    Amazon Getting Started guide).
-PRIVATE_KEY_PATH=`echo "${EC2_KEYDIR}"/"id_rsa-${KEY_NAME}"`
-# Ned's convention:
-#PRIVATE_KEY_PATH=`echo "$EC2_KEYDIR"/"$KEY_NAME"`
-# Fei's convention:
-PRIVATE_KEY_PATH=`echo "$EC2_KEYDIR"/"$KEY_NAME.pem"`
+# Build from the two variables from above
+PRIVATE_KEY_PATH=`echo "$EC2_KEYDIR"/"$KEY_NAME"`
 
 # The version of Hadoop to use.
 #  Note: HADOOP_VERSION has to be 0.19.0 or less, 0.20.2, or 0.20.203.0. AMIs can be accessed 
@@ -55,30 +51,29 @@ PRIVATE_KEY_PATH=`echo "$EC2_KEYDIR"/"$KEY_NAME.pem"`
 #    See launch-hadoop-master and launch-hadoop-slaves for how the AMI is 
 #      selected based on HADOOP_VERSION
 #HADOOP_VERSION=0.19.0
-#HADOOP_VERSION=0.20.2
-HADOOP_VERSION=0.20.203.0
+HADOOP_VERSION=0.20.2
+#HADOOP_VERSION=0.20.203.0
 
-# The EC2 instance type: m1.small, m1.large, m1.xlarge
+# The EC2 instance type: m1.small, m1.large, m1.xlarge, c1.medium, c1.xlarge, cc1.4xlarge
 #  NOTE: we do not support AMIs for all types of instances
 INSTANCE_TYPE="m1.small"
 #INSTANCE_TYPE="m1.large"
 #INSTANCE_TYPE="m1.xlarge"
 #INSTANCE_TYPE="c1.medium"
 #INSTANCE_TYPE="c1.xlarge"
+#INSTANCE_TYPE="cc1.4xlarge"
 
-# The AMI image to use with HADOOP_VERSION 0.20.2
+# The AMI image to use with HADOOP_VERSION 0.20.2 or 0.20.203.0
 # If INSTANCE_TYPE is "m1.small" or "c1.medium", AMI_IMAGE_32 is used.
 # Otherwise, AMI_IMAGE_64 is used.
 #    AMI ami-5729c03e: Ned created with Hadoop 0.20.2 (32 bit)
-#    AMI ami-2817ff41: Shivnath created with Hadoop 0.20.2, Ganglia (32 bit)
 #    AMI ami-58689831: Harold created with Hadoop 20 Warehouse (64 bit)
-#    AMI ami-a0ee12c9: Fei created with Hadoop 0.20.2 (64 bit)
+#    AMI ami-2817ff41: Shivnath created with Hadoop 0.20.2, Ganglia (32 bit)
+#    AMI ami-a0ee12c9: Fei created with Hadoop 0.20.2, Ganglia (64 bit)
 #    AMI ami-49975520: Fei created with Hadoop 0.20.203.0, Pig 0.9.0, Ant (32 bit)
 #    AMI ami-7b975512: Fei created with Hadoop 0.20.203.0, Pig 0.9.0, Ant (64 bit)
-#AMI_IMAGE_32="ami-2817ff41"
-#AMI_IMAGE_64="ami-a0ee12c9"
-AMI_IMAGE_32="ami-49975520"
-AMI_IMAGE_64="ami-7b975512"
+AMI_IMAGE_32="ami-2817ff41"
+AMI_IMAGE_64="ami-a0ee12c9"
 
 
 # Import local settings if they exists and OVEWRITE the defaults

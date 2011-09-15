@@ -1,0 +1,33 @@
+# Instructions
+# 1. Copy this file and remove the .template extension
+#    >$ cp local_ec2_settings.sh.template local_ec2_settings.sh
+# 2. Modify the settings in local_ec2_settings.sh as needed to launch
+#    the appropriate cluster with the correct credentials
+# 3. Do NOT modify hadoop-ec2-env.sh or local_ec2_settings.sh.template
+# #############################
+
+# Name of the EC2 keypair file
+KEY_NAME="${EC2_KEYPAIR_NAME}"
+
+# The full path to the EC2 keypair file
+PRIVATE_KEY_PATH=`echo "$EC2_KEYDIR"/"$KEY_NAME"`
+
+# Supported types: m1.small, m1.large, m1.xlarge, c1.medium, c1.xlarge, cc1.4xlarge
+INSTANCE_TYPE="m1.small"
+
+# Supported versions: less than 0.19.0, 0.20.2, 0.20.203.0
+HADOOP_VERSION="0.20.2"
+
+# The AMI image to use with HADOOP_VERSION 0.20.2 or 0.20.203.0
+# If INSTANCE_TYPE is "m1.small" or "c1.medium", AMI_IMAGE_32 is used.
+# Otherwise, AMI_IMAGE_64 is used.
+
+#    AMI ami-5729c03e: Ned created with Hadoop 0.20.2 (32 bit)
+#    AMI ami-2817ff41: Shivnath created with Hadoop 0.20.2, Ganglia (32 bit)
+#    AMI ami-49975520: Fei created with Hadoop 0.20.203.0, Pig 0.9.0, Ant (32 bit)
+AMI_IMAGE_32="ami-2817ff41"
+
+#    AMI ami-58689831: Harold created with Hadoop 20 Warehouse (64 bit)
+#    AMI ami-a0ee12c9: Fei created with Hadoop 0.20.2, Ganglia (64 bit)
+#    AMI ami-7b975512: Fei created with Hadoop 0.20.203.0, Pig 0.9.0, Ant (64 bit)
+AMI_IMAGE_64="ami-a0ee12c9"
