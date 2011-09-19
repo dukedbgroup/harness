@@ -20,6 +20,9 @@
 #    all the slave nodes and it is the same in all nodes.
 # 2. The local directory does not exist in the slave nodes
 # 3. The HDFS directory does not exist
+# 4. There is enough local disk space on the slave nodes to generate the data
+# 5. The number of files must be greater than half the scale factor to ensure
+#    that we don't try to generate a file that is greater than 2GB
 #
 # The data is loaded into HDFS. The name for each file is of the form
 # "tablename.tbl.x", where tablename is lineitem, orders etc, and 
