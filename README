@@ -18,10 +18,10 @@ See: http://developer.amazonwebservices.com/connect/entry.jspa?externalID=351
    https://wiki.duke.edu/display/hadoop/Source+Code
     
    # The command will be something of the form, with $USER replaced as needed:
-   git clone ssh://$USER@linux.cs.duke.edu/usr/research/proj/git/harness.git   
+   git clone ssh://$USER@linux.cs.duke.edu/usr/project/shivnath/git/harness.git   
 
    # If you are on a Duke machine with access to /usr/research/proj, the following will also work:
-   git clone file:///usr/research/proj/git/harness.git   
+   git clone file:///usr/project/shivnath/git/harness.git
 
    The above command will place the harness sources in the harness directory
    -- The Hadoop ec2 contrib sources we need are in: harness/hadoop_ec2_contrib_bin
