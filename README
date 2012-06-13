@@ -1,9 +1,15 @@
 --------------------------------------------------------------
 
-Useful references before you start: 
-----------------------------------
-- http://docs.amazonwebservices.com/AWSEC2/latest/GettingStartedGuide/
-- http://wiki.apache.org/hadoop/AmazonEC2
+Useful references to browse through before you start. 
+Skimming through these references is recommended. You
+are not required to master the details. 
+----------------------------------------------------
+
+# Getting started with Amazon Web Services (AWS)
+  http://docs.amazonwebservices.com/AWSEC2/latest/GettingStartedGuide/
+
+# Some notes on running Hadoop on AWS
+  http://wiki.apache.org/hadoop/AmazonEC2
 
 --------------------------------------------------------------
 --------------------------------------------------------------
@@ -12,16 +18,13 @@ Software to be installed on local machine:
 ------------------------------------------
 
 1. ec2-api-tools
-See: http://developer.amazonwebservices.com/connect/entry.jspa?externalID=351
+See: http://aws.amazon.com/developertools/351
 
-2. Get the AWS harness source from the Git repository. See:
+2. Get the AWS harness source (harness.git) from the Git repository. See:
    https://wiki.duke.edu/display/hadoop/Source+Code
     
    # The command will be something of the form, with $USER replaced as needed:
    git clone ssh://$USER@linux.cs.duke.edu/usr/project/shivnath/git/harness.git   
-
-   # If you are on a Duke machine with access to /usr/research/proj, the following will also work:
-   git clone file:///usr/project/shivnath/git/harness.git
 
    The above command will place the harness sources in the harness directory
    -- The Hadoop ec2 contrib sources we need are in: harness/hadoop_ec2_contrib_bin
@@ -32,7 +35,7 @@ See: http://developer.amazonwebservices.com/connect/entry.jspa?externalID=351
 
 Variables that need to be set on the local machine.
 Add these to ${HOME}/.bash_profile or ${HOME}/.bashrc or on the
-Duke department machines to ${HOME}/.my-bash_profile since the 
+Duke department Linux machines to ${HOME}/.my-bash_profile since the 
 ${HOME}/.bash_profile does a "source ~/.my-bash_profile"
 --------------------------------------------------
 
@@ -52,32 +55,31 @@ export AWS_HADOOP_HARNESS_HOME=[FILL IN with path to harness/aws_hadoop_harness]
 #   executables from ${AWS_HADOOP_HARNESS_HOME}
 export PATH=${PATH}:${JAVA_HOME}/bin:${EC2_HOME}/bin:${HADOOP_EC2_HOME}
 
-# Variables from AWS
+# Variables from AWS: Get these from your AWS Security Credentials
+#  in your AWS account
+
+# Fill your 12 digit AWS Account ID here (without any "-" in between)
 export AWS_USER_ID=[FILL IN]
-
+# Get this from the Access Credentials part of your AWS Security Credentials
 export AWS_ACCESS_KEY_ID=[FILL IN]
-
+# Get this from the Access Credentials part of your AWS Security Credentials
 export AWS_SECRET_ACCESS_KEY=[FILL IN]
 
-#  Note: it is a good idea to put the keys in 
-#    a standard directory like ${HOME}/.ec2
-#    For safety, chmod this directory to have rwx------ (i.e., chmod 700) permission
-export EC2_PRIVATE_KEY=[FILL IN with private key file path]
-export EC2_CERT=[FILL IN certificate file]
+# Note: to get the two files referred to below, you will have to 
+#    create X.509 certificates using the Access Credentials part
+#    of your AWS Security Credentials in your AWS account.
+#    Also, it is a good idea to put the files in a standard directory 
+#    like ${HOME}/.ec2  For safety, chmod this directory to have 
+#    rwx------ permission (i.e., chmod 700 path/to/file) 
+export EC2_PRIVATE_KEY=[FILL IN with private key file name, i.e., the file that starts with "pk-" and ends with .pem]
+export EC2_CERT=[FILL IN with certificate file name, i.e., the file that starts with "cert-" and ends with .pem]
 
 --------------------------------------------------------------
 ----------------------------------------------------------------------------
 
-Create a keypair to use for the hadoop cluster. You could use 
+Create a keypair to use for the hadoop cluster. You can create it 
+directly from the AWS Management Console or you could use 
 ${EC2_HOME}/bin/ec2-add-keypair 
-
-Note: suppose you create a keypair named my-keypair
-Then, the Hadoop EC2 configuration ${HADOOP_EC2_HOME}/hadoop-ec2-env.sh 
-makes two assumptions 
-
-ASSUMPTION:
-This private key file is stored in the same *directory* where you placed 
-    your AWS private key (i.e., the ${EC2_PRIVATE_KEY} above)
 
 Copy the template file with the local settings
 cp ${HADOOP_EC2_HOME}/local_ec2_settings.sh.template ${HADOOP_EC2_HOME}/local_ec2_settings.sh
@@ -90,6 +92,12 @@ settings and credentials:
   HADOOP_VERSION - Supported versions: less than 0.19.0, 0.20.2, 0.20.203.0
   AMI_IMAGE_32 - Will be selected if INSTANCE_TYPE is m1.small or c1.medium
   AMI_IMAGE_64 - Will be selected if INSTANCE_TYPE is m1.large or m1.xlarge or c1.xlarge
+
+************************************************
+NOTE: A common mistake that happens here is not 
+setting PRIVATE_KEY_PATH to the full path (including
+file name).
+************************************************
 
 --------------------------------------------------------------
 ----------------------------------------------------------------------------
@@ -105,6 +113,19 @@ cd ${AWS_HADOOP_HARNESS_HOME}
 #  N is specified in the command below (we use 2 as an example)
 ${HADOOP_EC2_HOME}/hadoop-ec2 launch-cluster test-hadoop-cluster 2
 
+************************************************
+If you see an error of the form: 
+...
+Warning: Identity file /home/foo/.ec2/my-keypair not accessible: No such file or directory.
+Permission denied (publickey,gssapi-with-mic).
+...
+
+Then, a likely problem is that PRIVATE_KEY_PATH is not set to the 
+full and correct path to the EC2 key-pair file. If you created the key-pair 
+using the AWS Management interface, then the file will have a .pem 
+extension. This extension has to be included in the full path.
+************************************************
+
 # Optionally, you may specify the instance type. Note that this will
 # overwrite the INSTANCE_TYPE setting in ${HADOOP_EC2_HOME}/hadoop-ec2-env.sh
 ${HADOOP_EC2_HOME}/hadoop-ec2 launch-cluster test-hadoop-cluster 2 m1.small
@@ -116,9 +137,13 @@ These errors happen if Ganglia is not present on the AMI being used
 http://<replace with public domain name of Hadoop Master>:50030
 
    1. # Note: you can find the public domain name of the Hadoop master
-      #   using the AWS management console or by running the following 
-      #   command on the local machine and looking for the instance listed under 
-      #   test-hadoop-cluster-master
+      # in one of two ways:
+      #   A. It is printed out as HADOOP_MASTER_NODE in the console
+             output when the cluster is launched. 
+      #   B. Using the AWS management console or by running the following 
+      #      command on the local machine and looking for the 
+      #      running (not terminated) instance listed under 
+      #      test-hadoop-cluster-master
       ${EC2_HOME}/bin/ec2-describe-instances 
 
    2. # Ensure that N slaves have joined the Hadoop cluster by checking 
@@ -135,22 +160,17 @@ http://<replace with public domain name of Hadoop Master>:50030
       #  joined the cluster.
 
 The launch-cluster command, if successful, will also print out the instance IDs 
-and private IPs of the 1 Master and the N slaves. In addition, we capture:
-  -- the instance ids of the slaves in the file called SLAVE_INSTANCE_IDS.txt
-  -- the AWS private IPs of the slaves in the file called SLAVE_NAMES.txt
-Both these files are in ${AWS_HADOOP_HARNESS_HOME} 
-
-# Ensure that the SLAVE_NAMES look okay and that there are N of them
-cat SLAVE_NAMES.txt
-cat SLAVE_NAMES.txt | wc -l
-
+and private IPs of the 1 Master and the N slaves. In addition, we capture
+the AWS private IPs of the slaves in the file called SLAVE_NAMES.txt
+that gets copied to the Hadoop master node. 
 
 # Login to the EC2 Hadoop Master node. This command will get you 
 # to the root prompt on the Hadoop Master if all the setup
 # and configuration has been done correctly 
 ${HADOOP_EC2_HOME}/hadoop-ec2 login test-hadoop-cluster
 
-# Ensure that Hadoop has been started properly on AWS using commands like: 
+# Ensure that Hadoop has been started properly on AWS by running 
+#  some hadoop commands on the Hadoop Master Node on AWS.
 # NOTE: Run the ${HADOOP_HOME}/bin/hadoop commands on the Hadoop Master Node
 
 # This command should only show few HDFS files that all start with /mnt
