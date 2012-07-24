@@ -139,7 +139,7 @@ if [ "$IS_MASTER" == "true" ]; then
   [ ! -e /mnt/pig/logs ] && mkdir -p /mnt/pig/logs
 
   # Prep Ganglia
-  sed -i -e "s|\( *mcast_join *=.*\)|#\1|" \
+  sed -i --follow-symlinks -e "s|\( *mcast_join *=.*\)|#\1|" \
          -e "s|\( *bind *=.*\)|#\1|" \
          -e "s|\( *mute *=.*\)|  mute = yes|" \
          -e "s|\( *location *=.*\)|  location = \"master-node\"|" \
@@ -160,11 +160,15 @@ if [ "$IS_MASTER" == "true" ]; then
 else
   # SLAVE
   # Prep Ganglia
-  sed -i -e "s|\( *mcast_join *=.*\)|#\1|" \
+  sed -i --follow-symlinks -e "s|\( *mcast_join *=.*\)|#\1|" \
          -e "s|\( *bind *=.*\)|#\1|" \
          -e "s|\(udp_send_channel {\)|\1\n  host=$MASTER_HOST|" \
          /etc/gmond.conf
   service gmond start
+  #Have to sleep a little bit before restarting because for some reason
+  #this is the only way before the slave starts sending metric data
+  sleep 10
+  /etc/init.d/gmond restart
 
   # Hadoop
   "$HADOOP_HOME"/bin/hadoop-daemon.sh start datanode
