@@ -9,6 +9,8 @@ use XML::Simple;
 use Data::Dumper;
 
 #####################################################################################
+## None of the variables below will need to be adjusted
+####################################################################################################################################################################################################################################################################################################################################################
 
 # the parameter types that can appear in the input XML configuration file 
 my $MAPREDUCE_JOBCONF_TYPE = "MAPREDUCE_JOBCONF"; # for the configuration parameters
@@ -48,10 +50,22 @@ my $RANDOMIZED_EXPERIMENT_LIST_FILE = "RANDOMIZED_EXPERIMENT_LIST.txt";
 #   run in a random order. Instead, the 0,..,N-1 order will be used 
 my $SHOULD_RANDOMIZE = "false";
 
-# The starfish build directory
-my $STARFISH_BUILD_DIR = "/root/build";
-
 #####################################################################################
+
+# Ensure that the Starfish home directory is defined
+my $STARFISH_HOME_DIR = $ENV{'STARFISH_HOME'}; 
+if ($STARFISH_HOME_DIR eq "") {
+      print "Error: Did not find the STARFISH_HOME environment variable\n";
+      print "Set STARFISH_HOME to the parent directory of bin/profile.\n\n";
+      exit -1;
+}
+
+# Ensure that the Starfish home directory contains bin/profile
+unless (-e "$STARFISH_HOME_DIR/bin/profile") {
+      print "Error: $STARFISH_HOME_DIR/bin/profile does not exist\n";
+      print "Set STARFISH_HOME to the parent directory of bin/profile.\n\n";
+      exit -1;
+}
 
 # if #arguments is incorrect, print usage
 my ($numargs) = $#ARGV + 1;
@@ -60,7 +74,7 @@ if ($numargs < 2) {
     #$^X is the name of this executable
     print "USAGE: " . $^X . " " . $0 . " <dir or XML config file> <base directory for experiments> [profile]\n\n";
     print "NOTE: For $0 to run, the base directory should not exist; it will be created.\n";
-    print "NOTE: If you use the flag 'profile', make sure to set STARFISH_BUILD_DIR in the script.\n\n";
+    print "NOTE: Set the STARFISH_HOME environment variable to the parent directory of bin/profile.\n\n";
     exit -1;
 }
 
@@ -365,7 +379,7 @@ foreach $file (@files) {
 		if ($profile_flag eq "false") {
 		    $hadoop_run_jar_command = '${HADOOP_HOME}' . "/bin/hadoop jar $jar_path $jar_class_name -conf $XML_CONF_FILE_NAME $jar_input_params $hdfs_output_path" . " >& $EXPERIMENT_OUTPUT_FILE &";
 		}else {
-			$hadoop_run_jar_command = "$STARFISH_BUILD_DIR/bin/profile hadoop jar $jar_path $jar_class_name -conf $XML_CONF_FILE_NAME -Dstarfish.profiler.output.dir=$EXP_BASE_DIR/results $jar_input_params $hdfs_output_path" . " >& $EXPERIMENT_OUTPUT_FILE &";
+			$hadoop_run_jar_command = "$STARFISH_HOME_DIR/bin/profile hadoop jar $jar_path $jar_class_name -conf $XML_CONF_FILE_NAME -Dstarfish.profiler.output.dir=$EXP_BASE_DIR/results $jar_input_params $hdfs_output_path" . " >& $EXPERIMENT_OUTPUT_FILE &";
 		}
 		# command to delete the HDFS output dir created for the experiment
 		$hadoop_delete_hdfs_output_command = '${HADOOP_HOME}' . "/bin/hadoop fs -rmr $hdfs_output_path";

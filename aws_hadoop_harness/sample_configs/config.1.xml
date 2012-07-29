@@ -4,11 +4,11 @@
                 <name>jar_path</name>
                 <type>HADOOP_JAR</type>
                 <description>Full path to the jar file to run on the EC2 node. Note:
-                        we assume that ${HADOOP_HOME} is defined on the EC2 nodes.
+                        we assume that ${STARFISH_HOME} is defined on the EC2 nodes.
                         Only a single value is allowed for this parameter.
                 </description>
                 <numvalues>1</numvalues>
-                <values>${HADOOP_HOME}/hadoop-*-examples.jar</values>
+                <values>${STARFISH_HOME}/contrib/examples/hadoop-starfish-examples.jar</values>
         </property>
         <property>
                 <name>jar_class_name</name>
@@ -57,7 +57,7 @@
                 <name>mapred.reduce.tasks</name>
                 <description>Number of reduce tasks</description>
                 <numvalues>2</numvalues>
-                <values>5,10</values>
+                <values>10,20</values>
         </property>
 	<property>
 		<name>mapred.child.java.opts</name>

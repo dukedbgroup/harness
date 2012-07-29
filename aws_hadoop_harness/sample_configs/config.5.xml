@@ -8,7 +8,7 @@
                 Ensure that the jar file below exists on the EC2 node from which
                 you are running this command. </description>
                 <numvalues>1</numvalues>
-                <values>/root/starfish-*.*.*/contrib/examples/hadoop-starfish-examples.jar</values>
+                <values>${STARFISH_HOME}/contrib/examples/hadoop-starfish-examples.jar</values>
         </property>
 
         <property>
@@ -46,8 +46,8 @@
 	<property>
 		<name>mapred.reduce.tasks</name>
                 <description>Number of reduce tasks</description>
-                <numvalues>1</numvalues>
-		<values>10</values>
+                <numvalues>2</numvalues>
+		<values>9,18</values>
 	</property>
 
         <property>
@@ -61,8 +61,8 @@
         <property>
                 <name>io.sort.mb</name>
                 <description>Memory for sort buffer at the Map side</description>
-	        <numvalues>1</numvalues>
-                <values>200</values>
+	        <numvalues>2</numvalues>
+                <values>100,200</values>
         </property>
 
         <property>
@@ -99,20 +99,28 @@
 
         <property>
                 <name>mapred.reduce.slowstart.completed.maps</name>
-	        <numvalues>1</numvalues>
-                <values>0.05</values>
+	        <numvalues>2</numvalues>
+                <values>0.05,0.8</values>
         </property>
 
         <property>
                 <name>mapred.compress.map.output</name>
-	        <numvalues>1</numvalues>
-                <values>false</values>
+	        <numvalues>2</numvalues>
+                <values>false,true</values>
         </property>
 
         <property>
                 <name>mapred.output.compress</name>
 	        <numvalues>1</numvalues>
                 <values>false</values>
+        </property>
+
+        <property>
+            <name>mapred.child.java.opts</name>
+	    <description>Java opts for the task
+                         tracker child processes</description>
+            <numvalues>1</numvalues>
+	    <values>-Xmx220m</values>
         </property>
 
 </configuration>
