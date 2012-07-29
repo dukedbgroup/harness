@@ -42,6 +42,17 @@ cat > $HADOOP_HOME/conf/core-site.xml <<EOF
   <value>hdfs://$MASTER_HOST:50001</value>
 </property>
 
+<property>
+  <name>hadoop.proxyuser.root.groups</name>
+  <value>root</value>
+</property>
+
+<property>
+  <name>hadoop.proxyuser.root.hosts</name>
+  <value>$MASTER_HOST</value>
+</property>
+
+
 </configuration>
 EOF
 
@@ -58,7 +69,16 @@ cat > $HADOOP_HOME/conf/hdfs-site.xml <<EOF
 
 <property>
   <name>dfs.block.size</name>
-  <value>268435456</value>
+  <!--<value>268435456</value>-->
+  <value>134217728</value>
+</property>
+<property>
+  <name>dfs.permissions.enabled</name>
+  <value>false</value>
+</property>
+<property>
+  <name>dfs.replication</name>
+  <value>1</value>
 </property>
 
 <property>
@@ -149,7 +169,7 @@ if [ "$IS_MASTER" == "true" ]; then
   [ ! -e /mnt/pig/logs ] && mkdir -p /mnt/pig/logs
 
   # Prep Ganglia
-  sed -i -e "s|\( *mcast_join *=.*\)|#\1|" \
+  sed -i --follow-symlinks -e "s|\( *mcast_join *=.*\)|#\1|" \
          -e "s|\( *bind *=.*\)|#\1|" \
          -e "s|\( *mute *=.*\)|  mute = yes|" \
          -e "s|\( *location *=.*\)|  location = \"master-node\"|" \
@@ -170,11 +190,15 @@ if [ "$IS_MASTER" == "true" ]; then
 else
   # SLAVE
   # Prep Ganglia
-  sed -i -e "s|\( *mcast_join *=.*\)|#\1|" \
+  sed -i --follow-symlinks -e "s|\( *mcast_join *=.*\)|#\1|" \
          -e "s|\( *bind *=.*\)|#\1|" \
          -e "s|\(udp_send_channel {\)|\1\n  host=$MASTER_HOST|" \
          /etc/gmond.conf
   service gmond start
+  #Have to sleep a little bit before restarting because for some reason
+  #this is the only way before the slave starts sending metric data
+  sleep 10 
+  /etc/init.d/gmond restart  
 
   # Hadoop
   "$HADOOP_HOME"/bin/hadoop-daemon.sh start datanode
