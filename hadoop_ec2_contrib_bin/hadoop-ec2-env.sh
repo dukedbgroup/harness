@@ -73,6 +73,8 @@ INSTANCE_TYPE="m1.small"
 AMI_IMAGE_32="ami-2817ff41"
 AMI_IMAGE_64="ami-a0ee12c9"
 
+#The type of framework in the image (HADOOP OR SPARK)
+FRAMEWORK_TYPE="HADOOP"
 
 # Import local settings if they exists and OVEWRITE the defaults
 bin=`dirname "$0"`
@@ -105,9 +107,17 @@ if [ $HADOOP_VERSION == "0.20.2" -o $HADOOP_VERSION == "0.20.203.0" ]; then
    if [ "$INSTANCE_TYPE" == "m1.small" ]; then
       USER_DATA_FILE=hadoop-ec2-init/hadoop-ec2-init-0.20.0-m1.small.sh
    elif [ "$INSTANCE_TYPE" == "m1.large" ]; then
-      USER_DATA_FILE=hadoop-ec2-init/hadoop-ec2-init-0.20.0-m1.large.sh
+      if [ "$FRAMEWORK_TYPE" == "SPARK" ]; then
+         USER_DATA_FILE=hadoop-ec2-init/hadoop-ec2-init-0.20.0-spark-m1.large.sh
+      else
+         USER_DATA_FILE=hadoop-ec2-init/hadoop-ec2-init-0.20.0-m1.large.sh
+      fi
    elif [ "$INSTANCE_TYPE" == "m1.xlarge" ]; then
-      USER_DATA_FILE=hadoop-ec2-init/hadoop-ec2-init-0.20.0-m1.xlarge.sh
+      if [ "$FRAMEWORK_TYPE" == "SPARK" ]; then
+         USER_DATA_FILE=hadoop-ec2-init/hadoop-ec2-init-0.20.0-spark-m1.xlarge.sh
+      else
+         USER_DATA_FILE=hadoop-ec2-init/hadoop-ec2-init-0.20.0-m1.xlarge.sh
+      fi
    elif [ "$INSTANCE_TYPE" == "c1.medium" ]; then
       USER_DATA_FILE=hadoop-ec2-init/hadoop-ec2-init-0.20.0-c1.medium.sh
    elif [ "$INSTANCE_TYPE" == "c1.xlarge" ]; then
@@ -115,7 +125,11 @@ if [ $HADOOP_VERSION == "0.20.2" -o $HADOOP_VERSION == "0.20.203.0" ]; then
    elif [ "$INSTANCE_TYPE" == "cc1.4xlarge" ]; then
       USER_DATA_FILE=hadoop-ec2-init/hadoop-ec2-init-0.20.0-cc1.4xlarge.sh
    else
-      USER_DATA_FILE=hadoop-ec2-init/hadoop-ec2-init-0.20.0-other.type.sh
+      if [ "$FRAMEWORK_TYPE" == "SPARK" ]; then
+         USER_DATA_FILE=hadoop-ec2-init/hadoop-ec2-init-0.20.0-spark-other.type.sh
+      else
+         USER_DATA_FILE=hadoop-ec2-init/hadoop-ec2-init-0.20.0-other.type.sh
+      fi
    fi
 else 
    USER_DATA_FILE=hadoop-ec2-init/hadoop-ec2-init-remote-pre-0.20.0.sh
