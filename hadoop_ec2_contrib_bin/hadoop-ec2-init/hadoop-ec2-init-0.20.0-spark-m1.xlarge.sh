@@ -27,6 +27,9 @@ SPARK_HOME=`ls -d /usr/local/spark-*`
 
 CLEANED_MASTER_HOST=`echo $MASTER_HOST | awk 'BEGIN { FS = "." } ; { print $1 }'`
 sed -i "s/MASTER_IP/${CLEANED_MASTER_HOST}/g" $SHARK_HOME/conf/shark-env.sh
+#comment the SPARK_JAVA_OPTS because it overrides the userdefined definitions of SPARK_JAVA_OPTS when launching programs
+sed -i "s/export SPARK_JAVA_OPTS/#export SPARK_JAVA_OPTS/g" $SHARK_HOME/conf/shark-env.sh
+sed -i "s/^SPARK_JAVA_OPTS/#SPARK_JAVA_OPTS/g" $SHARK_HOME/conf/shark-env.sh
 echo "export SPARK_MASTER_IP=${CLEANED_MASTER_HOST}">> $SPARK_HOME/conf/spark-env.sh
 
 ################################################################################
@@ -182,6 +185,8 @@ if [ "$IS_MASTER" == "true" ]; then
 
   "$HADOOP_HOME"/bin/hadoop-daemon.sh start namenode
 #  "$HADOOP_HOME"/bin/hadoop-daemon.sh start jobtracker
+  "$SPARK_HOME"/bin/spark-config.sh
+  "$SPARK_HOME"/bin/spark-daemon.sh start spark.deploy.master.Master
 else
   # SLAVE
   # Prep Ganglia
@@ -198,6 +203,8 @@ else
   # Hadoop
   "$HADOOP_HOME"/bin/hadoop-daemon.sh start datanode
 #  "$HADOOP_HOME"/bin/hadoop-daemon.sh start tasktracker
+  "$SPARK_HOME"/bin/spark-config.sh
+  "$SPARK_HOME"/bin/spark-daemon.sh start spark.deploy.worker.Worker spark://${CLEANED_MASTER_HOST}:7077
 fi
 
 # Run this script on next boot
