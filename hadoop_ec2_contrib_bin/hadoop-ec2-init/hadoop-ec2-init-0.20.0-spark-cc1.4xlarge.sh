@@ -66,7 +66,12 @@ cat > $HADOOP_HOME/conf/hdfs-site.xml <<EOF
 
 <property>
   <name>dfs.block.size</name>
-  <value>134217728</value>
+  <value>536870912</value>
+</property>
+
+<property>
+  <name>dfs.data.dir</name>
+  <value>/mnt/hadoop/dfs/data,/data/hadoop/dfs/data</value>
 </property>
 
 </configuration>
@@ -84,28 +89,33 @@ cat > $HADOOP_HOME/conf/mapred-site.xml <<EOF
 </property>
 
 <property>
+  <name>mapred.local.dir</name>
+  <value>/mnt/hadoop/mapred/local,/data/hadoop/mapred/local</value>
+</property>
+
+<property>
   <name>tasktracker.http.threads</name>
   <value>80</value>
 </property>
 
 <property>
   <name>mapred.tasktracker.map.tasks.maximum</name>
-  <value>2</value>
+  <value>8</value>
 </property>
 
 <property>
   <name>mapred.tasktracker.reduce.tasks.maximum</name>
-  <value>2</value>
+  <value>6</value>
 </property>
 
 <property>
   <name>mapred.child.java.opts</name>
-  <value>-Xmx300m</value>
+  <value>-Xmx1536m</value>
 </property>
 
 <property>
   <name>io.sort.mb</name>
-  <value>100</value>
+  <value>200</value>
 </property>
 
 </configuration>

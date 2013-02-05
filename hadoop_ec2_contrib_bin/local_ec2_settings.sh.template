@@ -28,10 +28,11 @@ FRAMEWORK_TYPE="HADOOP"
 #    AMI ami-5729c03e: Ned created with Hadoop 0.20.2 (32 bit)
 #    AMI ami-2817ff41: Shivnath created with Hadoop 0.20.2, Ganglia (32 bit)
 #    AMI ami-73b97b1a: Fei created with Hadoop 0.20.203.0, Pig 0.9.0, Ant (32 bit)
+#    AMI ami-74832e1d: Harold created with Hadoop 0.20.203.0, Pig 0.9.0, Ant, Ganglia (32-bit)
 AMI_IMAGE_32="ami-2817ff41"
 
 #    AMI ami-a0ee12c9: Fei created with Hadoop 0.20.2, Ganglia (64 bit)
 #    AMI ami-e7bf7d8e: Fei created with Hadoop 0.20.203.0, Pig 0.9.0, Ant (64 bit)
 #    AMI ami-58802d31: Harold created with Hadoop 0.20.203.0, Pig 0.9.0, Ant, Ganglia (64 bit)
-
+#    AMI ami-8f188fe6: Harold created with Hadoop 0.20.203.0, Pig 0.9.0, ant, ganglia (64-bit), Spark 0.6.1, Shark 0.2.1, mysql
 AMI_IMAGE_64="ami-a0ee12c9"

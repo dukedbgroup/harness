@@ -69,6 +69,11 @@ cat > $HADOOP_HOME/conf/hdfs-site.xml <<EOF
   <value>134217728</value>
 </property>
 
+<property>
+  <name>dfs.data.dir</name>
+  <value>/mnt/hadoop/dfs/data,/data/hadoop/dfs/data</value>
+</property>
+
 </configuration>
 EOF
 
@@ -84,28 +89,33 @@ cat > $HADOOP_HOME/conf/mapred-site.xml <<EOF
 </property>
 
 <property>
+  <name>mapred.local.dir</name>
+  <value>/mnt/hadoop/mapred/local,/data/hadoop/mapred/local</value>
+</property>
+
+<property>
   <name>tasktracker.http.threads</name>
   <value>80</value>
 </property>
 
 <property>
   <name>mapred.tasktracker.map.tasks.maximum</name>
-  <value>2</value>
+  <value>8</value>
 </property>
 
 <property>
   <name>mapred.tasktracker.reduce.tasks.maximum</name>
-  <value>2</value>
+  <value>6</value>
 </property>
 
 <property>
   <name>mapred.child.java.opts</name>
-  <value>-Xmx300m</value>
+  <value>-Xmx400m</value>
 </property>
 
 <property>
   <name>io.sort.mb</name>
-  <value>100</value>
+  <value>200</value>
 </property>
 
 </configuration>
@@ -145,7 +155,6 @@ if [ "$IS_MASTER" == "true" ]; then
   # MASTER
   # Create Pig log directory
   [ ! -e /mnt/pig/logs ] && mkdir -p /mnt/pig/logs
-
   # Prep Ganglia
   sed -i --follow-symlinks -e "s|\( *mcast_join *=.*\)|#\1|" \
          -e "s|\( *bind *=.*\)|#\1|" \

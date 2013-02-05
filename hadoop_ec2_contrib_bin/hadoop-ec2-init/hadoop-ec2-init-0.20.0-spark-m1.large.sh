@@ -27,9 +27,6 @@ SPARK_HOME=`ls -d /usr/local/spark-*`
 
 CLEANED_MASTER_HOST=`echo $MASTER_HOST | awk 'BEGIN { FS = "." } ; { print $1 }'`
 sed -i "s/MASTER_IP/${CLEANED_MASTER_HOST}/g" $SHARK_HOME/conf/shark-env.sh
-#comment the SPARK_JAVA_OPTS because it overrides the userdefined definitions of SPARK_JAVA_OPTS when launching programs
-sed -i "s/export SPARK_JAVA_OPTS/#export SPARK_JAVA_OPTS/g" $SHARK_HOME/conf/shark-env.sh
-sed -i "s/^SPARK_JAVA_OPTS/#SPARK_JAVA_OPTS/g" $SHARK_HOME/conf/shark-env.sh
 echo "export SPARK_MASTER_IP=${CLEANED_MASTER_HOST}">> $SPARK_HOME/conf/spark-env.sh
 
 ################################################################################
@@ -191,6 +188,9 @@ if [ "$IS_MASTER" == "true" ]; then
   service gmond start
   service gmetad start
   apachectl start
+
+  #Start the MySql Daemon
+  service mysqld start
 
   # Hadoop
   # only format on first boot
