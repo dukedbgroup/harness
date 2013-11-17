@@ -118,6 +118,12 @@ if [ $HADOOP_VERSION == "0.20.2" -o $HADOOP_VERSION == "0.20.203.0" ]; then
       else
          USER_DATA_FILE=hadoop-ec2-init/hadoop-ec2-init-0.20.0-m1.xlarge.sh
       fi
+   elif [ "$INSTANCE_TYPE" == "m3.xlarge" ]; then
+      if [ "$FRAMEWORK_TYPE" == "SPARK" ]; then
+        USER_DATA_FILE=hadoop-ec2-init/hadoop-ec2-init-0.20.0-bigframe-m3.xlarge.sh
+      else
+        USER_DATA_FILE=hadoop-ec2-init/hadoop-ec2-init-0.20.0-bigframe-m3.xlarge.sh
+      fi   
    elif [ "$INSTANCE_TYPE" == "c1.medium" ]; then
       USER_DATA_FILE=hadoop-ec2-init/hadoop-ec2-init-0.20.0-c1.medium.sh
    elif [ "$INSTANCE_TYPE" == "c1.xlarge" ]; then
