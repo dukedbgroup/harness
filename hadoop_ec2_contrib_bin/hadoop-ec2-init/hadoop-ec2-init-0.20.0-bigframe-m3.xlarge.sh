@@ -71,7 +71,7 @@ cat > $HADOOP_HOME/conf/hdfs-site.xml <<EOF
 </property>
 <property>
   <name>dfs.replication</name>
-  <value>1</value>
+  <value>2</value>
 </property>
 <property>
   <name>dfs.data.dir</name>
@@ -130,7 +130,7 @@ EOF
 # Hive configuration
 # Modify this section to customize your Hadoop cluster.
 ################################################################################
-cat > $HIVE_HOME/conf/hive-site.xml  <<EOF
+cat > $HIVE_HOME/conf/hive-site.xml  <<'EOF'
 
 <?xml version="1.0"?>
 <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
