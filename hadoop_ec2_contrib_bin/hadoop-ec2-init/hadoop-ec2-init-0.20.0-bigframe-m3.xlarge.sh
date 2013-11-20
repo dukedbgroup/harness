@@ -256,6 +256,9 @@ SPARK_HOME=$SPARK_HOME
 SHARK_HOME=$SHARK_HOME
 BIGFRAME_OPTS="${BIGFRAME_OPTS} -Dbigframe.shark.home=${SHARK_HOME}"
 
+# Local directory for Spark scratch space
+SPARK_LOCAL_DIR="/vertica/data/spark_local"
+
 # The Spark Master Address
 SPARK_MASTER=$SPARK_CONNECTION_STRING
 BIGFRAME_OPTS="${BIGFRAME_OPTS} -Dbigframe.spark.master=${SPARK_MASTER}"
