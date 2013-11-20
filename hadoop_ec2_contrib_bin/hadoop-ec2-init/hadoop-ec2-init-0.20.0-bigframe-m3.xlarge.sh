@@ -104,7 +104,7 @@ cat > $HADOOP_HOME/conf/mapred-site.xml <<EOF
 
 <property>
   <name>mapred.tasktracker.map.tasks.maximum</name>
-  <value>4</value>
+  <value>8</value>
 </property>
 
 <property>
@@ -127,9 +127,42 @@ cat > $HADOOP_HOME/conf/mapred-site.xml <<EOF
 EOF
 
 ################################################################################
+# Hive configuration
+# Modify this section to customize your Hadoop cluster.
+################################################################################
+cat > $HIVE_HOME/conf/hive-site.xml  <<EOF
+
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+
+<!-- Put site-specific property overrides in this file. -->
+
+<configuration>
+
+  <property>
+    <name>hive.exec.scratchdir</name>
+    <value>/vertica/data/hive/tmp/hive-${user.name}</value>
+  </property>
+
+  <property>
+    <name>hive.exec.local.scratchdir</name>
+    <value>/vertica/data/hive/tmp/${user.name}</value>
+  </property>
+
+  <property>
+    <name>hive.querylog.location</name>
+    <value>/vertica/data/hive/log/${user.name}</value>
+  </property>
+
+</configuration>
+EOF
+
+
+################################################################################
 # Bigframe configuration
 # Modify this section to customize your Bigframe.
 ################################################################################
+
 cat > /root/BigFrame/conf/config.sh <<'EOF'
 #!/usr/bin/env bash
 
