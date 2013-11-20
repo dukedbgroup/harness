@@ -94,7 +94,7 @@ cat > $HADOOP_HOME/conf/mapred-site.xml <<EOF
 
 <property>
   <name>mapred.local.dir</name>
-  <value>/vertica/data/hadoop/mapred/local,/data/hadoop/mapred/local</value>
+  <value>/vertica/data/hadoop/mapred/local</value>
 </property>
 
 <property>
@@ -104,14 +104,12 @@ cat > $HADOOP_HOME/conf/mapred-site.xml <<EOF
 
 <property>
   <name>mapred.tasktracker.map.tasks.maximum</name>
-<!--  <value>4</value>-->
-  <value>3</value>
+  <value>4</value>
 </property>
 
 <property>
   <name>mapred.tasktracker.reduce.tasks.maximum</name>
-<!--  <value>4</value>-->
-  <value>2</value>
+  <value>4</value>
 </property>
 
 <property>
@@ -205,7 +203,8 @@ export SPARK_HOME="/usr/local/spark-0.8.0"
 export SCALA_HOME="/usr/local/scala-2.9.3"
 
 # Spark memory parameters, defaults will be used if unspecified
-export SPARK_MEM=12g
+export SPARK_MEM=13g
+export SPARK_WORKER_CORES=8
 # export SPARK_WORKER_MEMORY=6g
 EOF
 
