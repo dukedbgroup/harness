@@ -27,7 +27,15 @@ SPARK_HOME=`ls -d /usr/local/spark-*`
 
 CLEANED_MASTER_HOST=`echo $MASTER_HOST | awk 'BEGIN { FS = "." } ; { print $1 }'`
 #sed -i "s/MASTER_IP/${CLEANED_MASTER_HOST}/g" $SHARK_HOME/conf/shark-env.sh
-echo "export SPARK_MASTER_IP=${CLEANED_MASTER_HOST}">> $SPARK_HOME/conf/spark-env.sh
+#echo "export SPARK_MASTER_IP=${CLEANED_MASTER_HOST}">> $SPARK_HOME/conf/spark-env.sh
+
+cat > $SPARK_HOME/conf/spark-env.sh <<EOF
+export SPARK_MASTER_IP=${CLEANED_MASTER_HOST}
+export SPARK_WORKER_MEMORY=13g
+export SPARK_WORKER_CORES=4
+EOF
+
+
 
 ################################################################################
 # Hadoop configuration
@@ -131,7 +139,6 @@ EOF
 # Modify this section to customize your Hadoop cluster.
 ################################################################################
 cat > $HIVE_HOME/conf/hive-site.xml  <<'EOF'
-
 <?xml version="1.0"?>
 <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
 
@@ -141,17 +148,17 @@ cat > $HIVE_HOME/conf/hive-site.xml  <<'EOF'
 
   <property>
     <name>hive.exec.scratchdir</name>
-    <value>/vertica/data/hive/tmp/hive-${user.name}</value>
+    <value>/vertica/data/user/root/tmp/hive-${user.name}</value>
   </property>
 
   <property>
     <name>hive.exec.local.scratchdir</name>
-    <value>/vertica/data/hive/tmp/${user.name}</value>
+    <value>/vertica/data/user/root/tmp/${user.name}</value>
   </property>
 
   <property>
     <name>hive.querylog.location</name>
-    <value>/vertica/data/hive/log/${user.name}</value>
+    <value>/vertica/data/user/root/log/${user.name}</value>
   </property>
 
 </configuration>
@@ -237,8 +244,6 @@ export SCALA_HOME="/usr/local/scala-2.9.3"
 
 # Spark memory parameters, defaults will be used if unspecified
 export SPARK_MEM=13g
-export SPARK_WORKER_CORES=8
-# export SPARK_WORKER_MEMORY=6g
 EOF
 
 cat >> /root/BigFrame/conf/spark-env.sh <<EOF
@@ -257,7 +262,7 @@ SHARK_HOME=$SHARK_HOME
 BIGFRAME_OPTS="${BIGFRAME_OPTS} -Dbigframe.shark.home=${SHARK_HOME}"
 
 # Local directory for Spark scratch space
-SPARK_LOCAL_DIR="/vertica/data/spark_local"
+SPARK_JAVA_OPTS="-Dspark.local.dir=/vertica/data/spark_local "
 
 # The Spark Master Address
 SPARK_MASTER=$SPARK_CONNECTION_STRING
@@ -266,7 +271,8 @@ EOF
 
 cat >> /root/BigFrame/conf/spark-env.sh <<EOF
 # Global Output Path
-export OUTPUT_PATH="hdfs://$MASTER_HOST:50001/test_output"
+export OUTPUT_PATH="hdfs://$MASTER_HOST:50001/test_output"\
+export 
 EOF
 
 
