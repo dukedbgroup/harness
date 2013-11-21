@@ -238,6 +238,7 @@ cat > /root/BigFrame/conf/spark-env.sh <<'EOF'
 
 # Path of Spark installation home. 
 export SPARK_HOME="/usr/local/spark-0.8.0"
+BIGFRAME_OPTS="${BIGFRAME_OPTS} -Dbigframe.spark.home=${SPARK_HOME}"
 
 # Path of Scala installation home.
 export SCALA_HOME="/usr/local/scala-2.9.3"
@@ -254,15 +255,13 @@ EOF
 
 cat >> /root/BigFrame/conf/spark-env.sh <<'EOF'
 
-# The Spark Home Directory
-SPARK_HOME=$SPARK_HOME
-
 # The Shark Home
 SHARK_HOME=$SHARK_HOME
 BIGFRAME_OPTS="${BIGFRAME_OPTS} -Dbigframe.shark.home=${SHARK_HOME}"
 
 # Local directory for Spark scratch space
 SPARK_LOCAL_DIR="/vertica/data/spark_local"
+BIGFRAME_OPTS="${BIGFRAME_OPTS} -Dbigframe.spark.local.dir=${SPARK_LOCAL_DIR}"
 
 # The Spark Master Address
 SPARK_MASTER=$SPARK_CONNECTION_STRING
@@ -271,8 +270,7 @@ EOF
 
 cat >> /root/BigFrame/conf/spark-env.sh <<EOF
 # Global Output Path
-export OUTPUT_PATH="hdfs://$MASTER_HOST:50001/test_output"\
-export 
+export OUTPUT_PATH="hdfs://$MASTER_HOST:50001/test_output"
 EOF
 
 
