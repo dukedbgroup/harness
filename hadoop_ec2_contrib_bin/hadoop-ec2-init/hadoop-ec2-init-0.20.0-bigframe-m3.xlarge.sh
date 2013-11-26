@@ -201,6 +201,7 @@ BIGFRAME_OPTS="${BIGFRAME_OPTS} -Dbigframe.tpcds.local=${TPCDS_LOCAL}"
 # Local Directory to store the itermediate data used for data refershing
 REFRESH_LOCAL=~/bigframe_refresh_data
 BIGFRAME_OPTS="${BIGFRAME_OPTS} -Dbigframe.refresh.local=${REFRESH_LOCAL}"
+
 EOF
 cat >> /root/BigFrame/conf/config.sh <<EOF
 # Global Output Path
@@ -220,6 +221,9 @@ BIGFRAME_OPTS="${BIGFRAME_OPTS} -Dbigframe.hdfs.root.dir=${HDFS_ROOT_DIR}"
 # The Hive HOME Directory
 HIVE_HOME=$HIVE_HOME
 BIGFRAME_OPTS="${BIGFRAME_OPTS} -Dbigframe.hive.home=${HIVE_HOME}"
+
+HIVE_ORC=true
+BIGFRAME_OPTS="${BIGFRAME_OPTS} -Dbigframe.hive.orc=${HIVE_ORC}"
 EOF
 cat >> /root/BigFrame/conf/hadoop-env.sh <<EOF
 
@@ -266,6 +270,15 @@ BIGFRAME_OPTS="${BIGFRAME_OPTS} -Dbigframe.spark.local.dir=${SPARK_LOCAL_DIR}"
 # The Spark Master Address
 SPARK_MASTER=$SPARK_CONNECTION_STRING
 BIGFRAME_OPTS="${BIGFRAME_OPTS} -Dbigframe.spark.master=${SPARK_MASTER}"
+
+# Use bagel for Spark
+SPARK_USE_BAGEL=true
+BIGFRAME_OPTS="${BIGFRAME_OPTS} -Dbigframe.spark.usebagel=${SPARK_USE_BAGEL}"
+
+# Spark degree of parallelism
+SPARK_DOP=8
+BIGFRAME_OPTS="${BIGFRAME_OPTS} -Dbigframe.spark.dop=${SPARK_DOP}"
+
 EOF
 
 cat >> /root/BigFrame/conf/spark-env.sh <<EOF
@@ -332,7 +345,7 @@ if [ "$IS_MASTER" == "true" ]; then
   "$HADOOP_HOME"/bin/hadoop-daemon.sh start namenode
   "$HADOOP_HOME"/bin/hadoop-daemon.sh start jobtracker
   "$SPARK_HOME"/bin/spark-config.sh
-  "$SPARK_HOME"/bin/start-master.sh
+  #"$SPARK_HOME"/bin/start-master.sh
 else
   # SLAVE
   # Prep Ganglia
@@ -350,7 +363,7 @@ else
   "$HADOOP_HOME"/bin/hadoop-daemon.sh start datanode
   "$HADOOP_HOME"/bin/hadoop-daemon.sh start tasktracker
   "$SPARK_HOME"/bin/spark-config.sh
-  "$SPARK_HOME"/spark-class org.apache.spark.deploy.worker.Worker spark://${CLEANED_MASTER_HOST}:7077 &
+  #"$SPARK_HOME"/spark-class org.apache.spark.deploy.worker.Worker spark://${CLEANED_MASTER_HOST}:7077 &
 fi
 
 # Run this script on next boot

@@ -69,6 +69,7 @@ if [ ! $? -eq 0 ]; then
     ec2-authorize $CLUSTER_MASTER -p 50002 # mapred
     ec2-authorize $CLUSTER_MASTER -p 50010 # hdfs datanode
     ec2-authorize $CLUSTER_MASTER -p 8080 #spark master web
+    ec2-authorize $CLUSTER_MASTER -p 4040 #spark master web
     ec2-authorize $CLUSTER_MASTER -p 8081 #spark worker web
   fi
 fi
