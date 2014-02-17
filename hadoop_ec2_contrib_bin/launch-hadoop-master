@@ -71,6 +71,8 @@ if [ ! $? -eq 0 ]; then
     ec2-authorize $CLUSTER_MASTER -p 8080 #spark master web
     ec2-authorize $CLUSTER_MASTER -p 4040 #spark master web
     ec2-authorize $CLUSTER_MASTER -p 8081 #spark worker web
+    ec2-authorize $CLUSTER -p 7077 #spark worker web
+
   fi
 fi
 
@@ -91,6 +93,8 @@ if [ ! $? -eq 0 ]; then
     ec2-authorize $CLUSTER -p 50010 # hdfs datanode
     ec2-authorize $CLUSTER -p 8080 #spark master web
     ec2-authorize $CLUSTER -p 8081 #spark worker web
+    ec2-authorize $CLUSTER -p 7077 #spark worker web
+
   fi
 
   ec2-authorize $CLUSTER_MASTER -o $CLUSTER -u $AWS_ACCOUNT_ID
@@ -142,7 +146,8 @@ ssh $SSH_OPTS "root@$MASTER_EC2_HOST" "chmod 600 /root/.ssh/id_rsa"
 # NOTE: we removed the "-f $bin/$USER_DATA_FILE" part from the ec2-run-instances command above. We now explicitly scp 
 #   this script to the Hadoop nodes, and run the script
 scp $SSH_OPTS "${bin}/${USER_DATA_FILE}" "root@$MASTER_EC2_HOST:/root/ec2_hadoop_master_init.sh"
-ssh $SSH_OPTS "root@$MASTER_EC2_HOST" "/root/ec2_hadoop_master_init.sh"
+ssh $SSH_OPTS "root@$MASTER_EC2_HOST" "sh /root/ec2_hadoop_master_init.sh"
 
 MASTER_IP=`dig +short $MASTER_EC2_HOST`
 echo "HADOOP_MASTER_NODE is $MASTER_EC2_HOST, ip is $MASTER_IP, zone is $MASTER_EC2_ZONE."
+ln -sf /usr/lib64/libsnappy.so /usr/local/hadoop-1.2.1/lib/native/Linux-amd64-64/.

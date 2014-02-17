@@ -81,7 +81,8 @@ done
 scp $SSH_OPTS "${bin}/${USER_DATA_FILE}.slave" "root@$MASTER_EC2_HOST:/root/ec2_hadoop_slave_init.sh"
 scp $SSH_OPTS SLAVE_NAMES.txt "root@$MASTER_EC2_HOST:/root/SLAVE_NAMES.txt"
 scp $SSH_OPTS "${bin}/start_hadoop_on_slaves.sh" "root@$MASTER_EC2_HOST:/root/start_hadoop_on_slaves.sh"
-ssh $SSH_OPTS "root@$MASTER_EC2_HOST" "/root/slaves.sh"
+ssh $SSH_OPTS "root@$MASTER_EC2_HOST" "/root/setup_helper.sh"
+
 #ssh $SSH_OPTS "root@$MASTER_EC2_HOST" "/root/start_hadoop_on_slaves.sh"
 
 # Clean up
