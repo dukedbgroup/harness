@@ -58,13 +58,13 @@ chmod +x /etc/init.d/ec2-run-user-data
 echo "/etc/init.d/ec2-run-user-data" >> /etc/rc.d/rc.local
 
 # Setup root user bash environment
-echo "export JAVA_HOME=/usr/local/jdk${JAVA_VERSION}" >> /root/.bash_profile
-echo "export HADOOP_HOME=/usr/local/hadoop-${HADOOP_VERSION}" >> /root/.bash_profile
-echo 'export PATH=$JAVA_HOME/bin:$HADOOP_HOME/bin:$PATH' >> /root/.bash_profile
+echo "export JAVA_HOME=/usr/local/jdk${JAVA_VERSION}" >> /home/ec2-user/.bash_profile
+echo "export HADOOP_HOME=/usr/local/hadoop-${HADOOP_VERSION}" >> /home/ec2-user/.bash_profile
+echo 'export PATH=$JAVA_HOME/bin:$HADOOP_HOME/bin:$PATH' >> /home/ec2-user/.bash_profile
 
 # Configure networking.
 # Delete SSH authorized_keys since it includes the key it was launched with. (Note that it is re-populated when an instance starts.)
-rm -f /root/.ssh/authorized_keys
+rm -f /home/ec2-user/.ssh/authorized_keys
 # Ensure logging in to new hosts is seamless.
 echo '    StrictHostKeyChecking no' >> /etc/ssh/ssh_config
 

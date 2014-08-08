@@ -45,7 +45,7 @@ done
 
 echo "The server is available at $HOSTNAME."
 while true; do
-  REPLY=`ssh $SSH_OPTS "root@$HOSTNAME" 'echo "hello"'`
+  REPLY=`ssh $SSH_OPTS "ec2-user@$HOSTNAME" 'echo "hello"'`
   if [ ! -z $REPLY ]; then
    break;
   fi
@@ -55,22 +55,22 @@ done
 #read -p "Login first? [yes or no]: " answer
 
 if [ "$answer" == "yes" ]; then
-  ssh $SSH_OPTS "root@$HOSTNAME"
+  ssh $SSH_OPTS "ec2-user@$HOSTNAME"
 fi
 
 echo "Copying scripts."
 
 # Copy setup scripts
-scp $SSH_OPTS "$bin"/hadoop-ec2-env.sh "root@$HOSTNAME:/mnt"
-scp $SSH_OPTS "$bin"/image/create-hadoop-image-remote "root@$HOSTNAME:/mnt"
-scp $SSH_OPTS "$bin"/image/ec2-run-user-data "root@$HOSTNAME:/etc/init.d"
+scp $SSH_OPTS "$bin"/hadoop-ec2-env.sh "ec2-user@$HOSTNAME:/mnt"
+scp $SSH_OPTS "$bin"/image/create-hadoop-image-remote "ec2-user@$HOSTNAME:/mnt"
+scp $SSH_OPTS "$bin"/image/ec2-run-user-data "ec2-user@$HOSTNAME:/etc/init.d"
 
 # Copy private key and certificate (for bundling image)
-scp $SSH_OPTS $EC2_KEYDIR/pk*.pem "root@$HOSTNAME:/mnt"
-scp $SSH_OPTS $EC2_KEYDIR/cert*.pem "root@$HOSTNAME:/mnt"
+scp $SSH_OPTS $EC2_KEYDIR/pk*.pem "ec2-user@$HOSTNAME:/mnt"
+scp $SSH_OPTS $EC2_KEYDIR/cert*.pem "ec2-user@$HOSTNAME:/mnt"
 
 # Connect to it
-ssh $SSH_OPTS "root@$HOSTNAME" '/mnt/create-hadoop-image-remote'
+ssh $SSH_OPTS "ec2-user@$HOSTNAME" '/mnt/create-hadoop-image-remote'
 
 # Register image
 ec2-register $S3_BUCKET/hadoop-$HADOOP_VERSION-$ARCH.manifest.xml

@@ -5,8 +5,8 @@
 
 # These two files will be scp'ed in launch-hadoop-slaves
 #    as part of the starting the slaves
-HOSTLIST="/root/SLAVE_NAMES.txt"
-EC2_INIT_SCRIPT="/root/ec2_hadoop_slave_init.sh"
+HOSTLIST="/home/ec2-user/SLAVE_NAMES.txt"
+EC2_INIT_SCRIPT="/home/ec2-user/ec2_hadoop_slave_init.sh"
 
 # SSH options used when connecting to EC2 Slave instances from the Master
 SSH_OPTS=`echo -o StrictHostKeyChecking=no -o ServerAliveInterval=30`
@@ -30,7 +30,7 @@ for slave_private_ip in `cat "$HOSTLIST"`; do
 
    # try ssh to see whether we can connect to the slave 
    for (( attempt_num=0; attempt_num < $NUM_SSH_ATTEMPTS; attempt_num++ )) ; do
-     REPLY=`ssh $SSH_OPTS "root@${slave_private_ip}" 'echo "hello"'`
+     REPLY=`ssh $SSH_OPTS "ec2-user@${slave_private_ip}" 'echo "hello"'`
      if [ ! -z $REPLY ]; then
         # ssh worked 
         MANUAL_START_REQUIRED=0
@@ -41,8 +41,8 @@ for slave_private_ip in `cat "$HOSTLIST"`; do
 
    if [ $MANUAL_START_REQUIRED = 0 ]; then
         # scp and automatic start should work now for this slave
-       scp $SSH_OPTS $EC2_INIT_SCRIPT "root@${slave_private_ip}:${EC2_INIT_SCRIPT}"
-       ssh $SSH_OPTS "root@${slave_private_ip}" "${EC2_INIT_SCRIPT}"
+       scp $SSH_OPTS $EC2_INIT_SCRIPT "ec2-user@${slave_private_ip}:${EC2_INIT_SCRIPT}"
+       ssh $SSH_OPTS "ec2-user@${slave_private_ip}" "${EC2_INIT_SCRIPT}"
    else 
        echo "ERROR: Automatic start of Hadoop on slave node ${slave_private_ip} failed. Manual start required."
    fi 
