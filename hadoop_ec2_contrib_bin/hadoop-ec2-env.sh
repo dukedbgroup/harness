@@ -149,6 +149,8 @@ if [ $HADOOP_VERSION == "0.20.2" -o $HADOOP_VERSION == "0.20.203.0" ]; then
          USER_DATA_FILE=hadoop-ec2-init/hadoop-ec2-init-0.20.0-other.type.sh
       fi
    fi
+elif [ "$FRAMEWORK_TYPE" == "ROBUS" ]; then
+   USER_DATA_FILE=hadoop-ec2-init/hadoop-ec2-init-1.2.1-ROBUS-m3.xlarge.sh
 else 
    USER_DATA_FILE=hadoop-ec2-init/hadoop-ec2-init-remote-pre-0.20.0.sh
 fi

@@ -9,21 +9,11 @@
 ################################################################################
 
 # disk setup
+mount /dev/sdb /mnt
 umount /media/ephemeral0
 mount /dev/sdc /mnt2
 mount /dev/sdd /mnt3
 mount /dev/sde /mnt4
-
-yes | mdadm --create --verbose /dev/md0 --level=stripe --raid-devices=4 /dev/sda2 /dev/sdc /dev/sdd /dev/sde 
-echo 'DEVICE /dev/sda2 /dev/sdc /dev/sdd /dev/sde' > /etc/mdadm.conf
-/sbin/mdadm --detail --scan >> /etc/mdadm.conf
-
-echo | mkfs.ext4 /dev/md0
-mount -t ext4 -o noatime /dev/md0 /mnt
-
-mv /etc/fstab /etc/fstab.orig
-sed '/\/mnt/ c /dev/md0 /mnt ext4 defaults 0 0' < /etc/fstab.orig > /etc/fstab
-
 
 # Slaves are started after the master, and are told its address by sending a
 # modified copy of this file which sets the MASTER_HOST variable. 
@@ -41,7 +31,7 @@ HADOOP_HOME=`ls -d /usr/local/hadoop-*`
 #set the SPARK MASTER INFO in the shark conf
 SHARK_HOME=`ls -d /usr/local/shark-0.8.1`
 SPARK_HOME=`ls -d /usr/local/spark-0.8.1`
-
+BIGFRAME_HOME=`ls -d /root/Shark-BigFrame`
 CLEANED_MASTER_HOST=`echo $MASTER_HOST | awk 'BEGIN { FS = "." } ; { print $1 }'`
 #sed -i "s/MASTER_IP/${CLEANED_MASTER_HOST}/g" $SHARK_HOME/conf/shark-env.sh
 #echo "export SPARK_MASTER_IP=${CLEANED_MASTER_HOST}">> $SPARK_HOME/conf/spark-env.sh
@@ -136,7 +126,7 @@ cat > $HADOOP_HOME/conf/mapred-site.xml <<EOF
 
 <property>
   <name>mapred.tasktracker.reduce.tasks.maximum</name>
-  <value>4</value>
+  <value>2</value>
 </property>
 
 <property>
@@ -180,6 +170,33 @@ cat > $HIVE_HOME/conf/hive-site.xml  <<'EOF'
     <value>/mnt/user/root/log/${user.name}</value>
   </property>
 
+  <property>
+    <name>hive.exec.reducers.bytes.per.reducer</name>
+    <value>500000000</value>
+    <description>size per reducer.The default is 1G, i.e if the input size is 10G, it will use 10 reducers.</description>
+  </property>
+
+  <property>
+    <name>hive.auto.convert.join</name>
+    <value>false</value>
+    <description>Whether Hive enable the optimization about converting common join into mapjoin based on the input file size</description>
+  </property>
+
+  <property>
+    <name>hive.merge.mapredfiles</name>
+    <value>true</value>
+  </property>
+
+  <property>
+    <name>mapred.reduce.tasks</name>
+    <value>-1</value>
+  </property>
+
+  <property>
+    <name>hive.exec.parallel</name>
+    <value>true</value>
+  </property>
+
 </configuration>
 EOF
 
@@ -189,7 +206,7 @@ EOF
 # Modify this section to customize your Bigframe.
 ################################################################################
 
-cat > /root/BigFrame/conf/config.sh <<'EOF'
+cat > $BIGFRAME_HOME/conf/config.sh <<'EOF'
 #!/usr/bin/env bash
 
 ###################################################################
@@ -222,19 +239,19 @@ REFRESH_LOCAL=~/bigframe_refresh_data
 BIGFRAME_OPTS="${BIGFRAME_OPTS} -Dbigframe.refresh.local=${REFRESH_LOCAL}"
 
 EOF
-cat >> /root/BigFrame/conf/config.sh <<EOF
+cat >> $BIGFRAME_HOME/conf/config.sh <<EOF
 # Global Output Path
 export OUTPUT_PATH="hdfs://$MASTER_HOST:50001/test_output"
 EOF
 
-cat > /root/BigFrame/conf/hadoop-env.sh <<EOF
+cat > $BIGFRAME_HOME/conf/hadoop-env.sh <<EOF
 #!/usr/bin/env bash
 
 ######################### HADOOP RELATED ##########################
 # The HDFS Root Directory to store the generated data
 HDFS_ROOT_DIR="hdfs://$MASTER_HOST:50001/user/root"
 EOF
-cat >> /root/BigFrame/conf/hadoop-env.sh <<'EOF'
+cat >> $BIGFRAME_HOME/conf/hadoop-env.sh <<'EOF'
 BIGFRAME_OPTS="${BIGFRAME_OPTS} -Dbigframe.hdfs.root.dir=${HDFS_ROOT_DIR}"
 
 HADOOP_USERNAME="root"
@@ -245,29 +262,34 @@ HIVE_HOME=$HIVE_HOME
 BIGFRAME_OPTS="${BIGFRAME_OPTS} -Dbigframe.hive.home=${HIVE_HOME}"
 EOF
 
-cat >> /root/BigFrame/conf/hadoop-env.sh <<EOF
+cat >> $BIGFRAME_HOME/conf/hadoop-env.sh <<EOF
 HIVE_WAREHOUSE="hdfs://$MASTER_HOST:50001/user/hive/warehouse"
 EOF
-cat >> /root/BigFrame/conf/hadoop-env.sh <<'EOF'
+cat >> $BIGFRAME_HOME/conf/hadoop-env.sh <<'EOF'
 BIGFRAME_OPTS="${BIGFRAME_OPTS} -Dbigframe.hive.warehouse=${HIVE_WAREHOUSE}"
 
+# ORC Table Setting
 ORC_SETTING="true"
 BIGFRAME_OPTS="${BIGFRAME_OPTS} -Dbigframe.hive.orc=${ORC_SETTING}"
+
+# Snappy Compression
+HIVE_SNAPPY="true"
+BIGFRAME_OPTS="${BIGFRAME_OPTS} -Dbigframe.hive.snappy=${HIVE_SNAPPY}"
 
 # Skip Prepare Tables
 SKIP_PREPARE_TABLE="false"
 BIGFRAME_OPTS="${BIGFRAME_OPTS} -Dbigframe.skip.prepare.table=${SKIP_PREPARE_TABLE}"
 EOF
-cat >> /root/BigFrame/conf/hadoop-env.sh <<EOF
+cat >> $BIGFRAME_HOME/conf/hadoop-env.sh <<EOF
 
 # The Hive JDBC Server Address
 HIVE_JDBC_SERVER="jdbc:hive://$MASTER_HOST:10000/default"
 EOF
-cat >> /root/BigFrame/conf/hadoop-env.sh <<'EOF'
+cat >> $BIGFRAME_HOME/conf/hadoop-env.sh <<'EOF'
 BIGFRAME_OPTS="${BIGFRAME_OPTS} -Dbigframe.hive.jdbc.server=${HIVE_JDBC_SERVER}"                                                                                                                                                                        
 EOF
 
-cat > /root/BigFrame/conf/spark-env.sh <<'EOF'
+cat > $BIGFRAME_HOME/conf/spark-env.sh <<'EOF'
 
 #!/usr/bin/env bash
 
@@ -284,13 +306,13 @@ export SCALA_HOME="/usr/local/scala-2.9.3"
 export SPARK_MEM=13g
 EOF
 
-cat >> /root/BigFrame/conf/spark-env.sh <<EOF
+cat >> $BIGFRAME_HOME/conf/spark-env.sh <<EOF
 
 # Spark connection string, available in Spark master's webUI
 export SPARK_CONNECTION_STRING="spark://${CLEANED_MASTER_HOST}:7077"
 EOF
 
-cat >> /root/BigFrame/conf/spark-env.sh <<'EOF'
+cat >> $BIGFRAME_HOME/conf/spark-env.sh <<'EOF'
 
 # The Shark Home
 SHARK_HOME="/usr/local/shark-0.8.1"
@@ -304,6 +326,9 @@ BIGFRAME_OPTS="${BIGFRAME_OPTS} -Dbigframe.shark.rc=${SHARK_RC}"
 SHARK_ENABLE_SNAPPY="true"
 BIGFRAME_OPTS="${BIGFRAME_OPTS} -Dbigframe.shark.enable.snappy=${SHARK_ENABLE_SNAPPY}"
 
+# Skip Prepare Tables
+SKIP_PREPARE_TABLE="false"
+BIGFRAME_OPTS="${BIGFRAME_OPTS} -Dbigframe.skip.prepare.table=${SKIP_PREPARE_TABLE}"
 
 # Local directory for Spark scratch space
 SPARK_LOCAL_DIR="/mnt/spark_local"
@@ -339,12 +364,12 @@ BIGFRAME_OPTS="${BIGFRAME_OPTS} -Dbigframe.spark.master=${SPARK_MASTER}"
 
 EOF
 
-cat >> /root/BigFrame/conf/spark-env.sh <<EOF
+cat >> $BIGFRAME_HOME/conf/spark-env.sh <<EOF
 # Global Output Path
 export OUTPUT_PATH="hdfs://$MASTER_HOST:50001/test_output"
 EOF
 
-cat > /usr/local/shark-0.8.1/conf/shark-env.sh <<'EOF'
+cat > $SHARK_HOME/conf/shark-env.sh <<'EOF'
 #!/usr/bin/env bash
 
 # (Required) Amount of memory used per slave node. This should be in the same
@@ -361,12 +386,12 @@ export SCALA_HOME="/usr/local/scala-2.9.3"
 export HIVE_HOME="/usr/local/hive-0.9.0-bin/"
 EOF
 
-cat >> /usr/local/shark-0.8.1/conf/shark-env.sh <<EOF
+cat >> $SHARK_HOME/conf/shark-env.sh <<EOF
 # For running Shark in distributed mode, set the following:
 export MASTER="spark://${CLEANED_MASTER_HOST}:7077"
 EOF
 
-cat >> /usr/local/shark-0.8.1/conf/shark-env.sh <<'EOF'
+cat >> $SHARK_HOME/conf/shark-env.sh <<'EOF'
 # Java options
 SPARK_JAVA_OPTS="-Dspark.local.dir=/mnt/tmp "
 SPARK_JAVA_OPTS+="-Dspark.kryoserializer.buffer.mb=10 "

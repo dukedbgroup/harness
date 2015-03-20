@@ -83,7 +83,7 @@ scp $SSH_OPTS SLAVE_NAMES.txt "ec2-user@$MASTER_EC2_HOST:/home/ec2-user/SLAVE_NA
 scp $SSH_OPTS "${bin}/start_hadoop_on_slaves.sh" "ec2-user@$MASTER_EC2_HOST:/home/ec2-user/start_hadoop_on_slaves.sh"
 #ssh $SSH_OPTS "root@$MASTER_EC2_HOST" "/root/setup_helper.sh"
 
-#ssh $SSH_OPTS "root@$MASTER_EC2_HOST" "/root/start_hadoop_on_slaves.sh"
+#ssh $SSH_OPTS "ec2-user@$MASTER_EC2_HOST" "/home/ec2-user/start_hadoop_on_slaves.sh"
 
 # Clean up
 rm "$bin"/${USER_DATA_FILE}.slave
