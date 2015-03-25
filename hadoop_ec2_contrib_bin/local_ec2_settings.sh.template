@@ -12,13 +12,14 @@ KEY_NAME="${EC2_KEYPAIR_NAME}"
 # The full path to the EC2 keypair file
 PRIVATE_KEY_PATH=`echo "$EC2_KEYDIR"/"$KEY_NAME"`
 
-# Supported types: m1.small, m1.large, m1.xlarge, c1.medium, c1.xlarge, cc1.4xlarge
-INSTANCE_TYPE="m1.small"
+# Supported types: m1.small, m1.large, m1.xlarge, c1.medium, c1.xlarge, cc1.4xlarge, m3.large, m3.xlarge
+INSTANCE_TYPE="m3.xlarge"
 
 # Supported versions: less than 0.19.0, 0.20.2, 0.20.203.0
+# Redundant for THOTH or ROBUS images
 HADOOP_VERSION="0.20.2"
 
-#HADOOP OR SPARK?
+#HADOOP OR SPARK OR THOTH OR ROBUS?
 FRAMEWORK_TYPE="HADOOP"
 
 # The AMI image to use with HADOOP_VERSION 0.20.2 or 0.20.203.0
@@ -31,4 +32,8 @@ AMI_IMAGE_32="ami-2817ff41"
 
 #    AMI ami-58802d31: Harold created with Hadoop 0.20.203.0, Pig 0.9.0, Ant, Ganglia (64 bit)
 #    AMI ami-8f188fe6: Harold created with Hadoop 0.20.203.0, Pig 0.9.0, ant, ganglia (64-bit), Spark 0.6.1, Shark 0.2.1, mysql
+#    AMI ami-36c1115e: Mayuresh created with Hadoop 0.20.2, Hive 0.12.0, Scala 2.10.3, Spark 1.0.1, HBase 0.94.20, Apache Flume 1.5.0, mysql 5.6.20 and BigFrame. Supports m3.xlarge. Used for VLDB 2014 demo
+#    AMI ami-ec2b0484: Mayuresh created with Hadoop 1.2.1, Hive 0.12.0, Scala 2.10.3, Spark 1.1.1, HBase
+#    0.94.20, Apache Flume 1.5.0, mysql 5.6.20, BigFrame, and ROBUS. A 1TB EBS storage is attached.
+#     Used for ROBUS expts. Configured to run grouping-agg queries on 30 copies of store_sales
 AMI_IMAGE_64="ami-58802d31"
