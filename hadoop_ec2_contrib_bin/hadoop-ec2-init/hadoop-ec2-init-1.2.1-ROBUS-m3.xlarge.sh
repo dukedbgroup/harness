@@ -33,6 +33,8 @@ cat > $SPARK_HOME/conf/spark-env.sh <<EOF
 export SPARK_MASTER_IP=${CLEANED_MASTER_HOST}
 export SPARK_WORKER_MEMORY=13g
 export SPARK_WORKER_CORES=4
+export SPARK_LOCAL_DIRS=/thoth/tmp
+export SPARK_WORKER_DIR=/thoth/tmp/spark-work
 EOF
 
 
