@@ -32,10 +32,14 @@ CLEANED_MASTER_HOST=`echo $MASTER_HOST | awk 'BEGIN { FS = "." } ; { print $1 }'
 cat > $SPARK_HOME/conf/spark-env.sh <<EOF
 export SPARK_MASTER_IP=${CLEANED_MASTER_HOST}
 export SPARK_WORKER_MEMORY=13g
-export SPARK_WORKER_CORES=4
+export SPARK_WORKER_CORES=8
+export SPARK_LOCAL_DIRS=/thoth/tmp
+export SPARK_WORKER_DIR=/thoth/spark-work
 EOF
 
-
+cat > $SPARK_HOME/conf/spark-defaults.conf <<EOF
+spark.io.compression.codec org.apache.spark.io.LZ4CompressionCodec
+EOF
 
 ################################################################################
 # Hadoop configuration
@@ -203,6 +207,8 @@ cat > $HIVE_HOME/conf/hive-site.xml  <<EOF
 
   <property>
     <name>hive.querylog.location</name>
+EOF
+cat >> $HIVE_HOME/conf/hive-site.xml <<'EOF'
     <value>/vertica/data/user/root/log/${user.name}</value>
   </property>
 
@@ -246,6 +252,8 @@ cat > $HIVE_HOME/conf/hive-site.xml  <<EOF
 <property>
   <name>hive.exec.scratchdir</name>
   <value>/thoth/tmp/hive-${user.name}</value>
+EOF
+cat >> $HIVE_HOME/conf/hive-site.xml <<EOF
   <description>Scratch space for Hive jobs</description>
 </property>
 
@@ -709,7 +717,7 @@ users transform function (the custom mapper/reducer that the user has specified 
 <property>
   <name>hive.hwi.war.file</name>
   <value>lib/hive-hwi-0.9.0.war</value>
-  <description>This sets the path to the HWI war file, relative to ${HIVE_HOME}. </description>
+  <description>This sets the path to the HWI war file, relative to {HIVE_HOME}. </description>
 </property>
 
 <property>

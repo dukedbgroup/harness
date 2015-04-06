@@ -123,10 +123,6 @@ if [ $HADOOP_VERSION == "0.20.2" -o $HADOOP_VERSION == "0.20.203.0" ]; then
    elif [ "$INSTANCE_TYPE" == "m3.xlarge" ]; then
       if [ "$FRAMEWORK_TYPE" == "SPARK" ]; then
         USER_DATA_FILE=hadoop-ec2-init/hadoop-ec2-init-0.20.0-bigframe-m3.xlarge.sh
-      elif [ "$FRAMEWORK_TYPE" == "THOTH" ]; then
-        USER_DATA_FILE=hadoop-ec2-init/hadoop-ec2-init-0.20.0-thoth-m3.xlarge.sh 
-      else
-        USER_DATA_FILE=hadoop-ec2-init/hadoop-ec2-init-0.20.0-bigframe-m3.xlarge.sh
       fi   
    elif [ "$INSTANCE_TYPE" == "c1.medium" ]; then
       USER_DATA_FILE=hadoop-ec2-init/hadoop-ec2-init-0.20.0-c1.medium.sh
@@ -149,11 +145,18 @@ if [ $HADOOP_VERSION == "0.20.2" -o $HADOOP_VERSION == "0.20.203.0" ]; then
          USER_DATA_FILE=hadoop-ec2-init/hadoop-ec2-init-0.20.0-other.type.sh
       fi
    fi
-elif [ "$FRAMEWORK_TYPE" == "ROBUS" ]; then
-   USER_DATA_FILE=hadoop-ec2-init/hadoop-ec2-init-1.2.1-ROBUS-m3.xlarge.sh
 else 
    USER_DATA_FILE=hadoop-ec2-init/hadoop-ec2-init-remote-pre-0.20.0.sh
 fi
+
+if [ "$FRAMEWORK_TYPE" == "THOTH" ]; then
+   USER_DATA_FILE=hadoop-ec2-init/hadoop-ec2-init-0.20.0-THOTH-m3.xlarge.sh
+fi
+
+if [ "$FRAMEWORK_TYPE" == "ROBUS" ]; then
+   USER_DATA_FILE=hadoop-ec2-init/hadoop-ec2-init-1.2.1-ROBUS-m3.xlarge.sh
+fi
+
 
 # The Amazon S3 bucket where the Hadoop AMI is stored. Used only for HADOOP_VERSION <= 0.19.0 
 # The default value is for public images, so can be left if you are using running a public image.
@@ -218,5 +221,4 @@ else
    # This part will only work for $HADOOP_VERSION being 0.19.0 or less 
    AMI_IMAGE=`ec2-describe-images -a | grep $S3_BUCKET | grep $HADOOP_VERSION | grep $ARCH | grep available | awk '{print $2}'`   
 fi
-
 ######################################################################
